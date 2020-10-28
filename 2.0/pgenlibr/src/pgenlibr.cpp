@@ -2,6 +2,22 @@
 #include "include/pgenlib_read.h"
 #include "pvar.h"  // includes Rcpp
 
+void printBits(size_t const size, void const * const ptr)
+{
+    unsigned char *b = (unsigned char*) ptr;
+    unsigned char byte;
+    int i, j;
+    
+    for (i = size-1; i >= 0; i--) {
+        for (j = 7; j >= 0; j--) {
+            byte = (b[i] >> j) & 1;
+            printf("%u", byte);
+        }
+    }
+    puts("");
+}
+
+
 class RPgenReader {
 public:
   // imitates Python/pgenlib.pyx
@@ -45,6 +61,9 @@ public:
   void ReadList(NumericMatrix buf, IntegerVector variant_subset, bool meanimpute);
 
   void FillVariantScores(NumericVector result, NumericVector weights, Nullable<IntegerVector> variant_subset);
+
+  void ReadDiffListOrGenovec(IntegerVector variant_subset);
+  void ReadCompactListNoDosage(uintptr_t** Mptr , IntegerVector variant_subset);
 
   void Close();
 
@@ -551,6 +570,43 @@ void RPgenReader::ReadIntList(IntegerMatrix buf, IntegerVector variant_subset) {
   }
 }
 
+void RPgenReader::ReadCompactListNoDosage(uintptr_t** Mptr , IntegerVector variant_subset) {
+  if (!_info_ptr) {
+    stop("pgen is closed");
+  }
+  // assume that buf has the correct dimensions
+  const uintptr_t vsubset_size = variant_subset.size();
+  const uint32_t raw_variant_ct = _info_ptr->raw_variant_ct;
+
+  const uint32_t cache_line_ct =
+        plink2::DivUp(_subset_size, plink2::kNypsPerCacheline);
+  const uint32_t word_ct = plink2::kWordsPerCacheline * cache_line_ct;
+  const uint32_t byte_ct = cache_line_ct * plink2::kCacheline;
+
+  if (plink2::cachealigned_malloc(byte_ct * vsubset_size, Mptr)) {
+      stop("Out of memory");
+  }
+
+
+  for (uintptr_t col_idx = 0; col_idx != vsubset_size; ++col_idx) {
+    uint32_t variant_idx = variant_subset[col_idx] - 1;
+    if (static_cast<uint32_t>(variant_idx) >= raw_variant_ct) {
+      char errstr_buf[256];
+      sprintf(errstr_buf, "variant_subset element out of range (%d; must be 1..%u)", variant_idx + 1, raw_variant_ct);
+      stop(errstr_buf);
+    }
+    plink2::PglErr reterr = PgrGet(_subset_include_vec, _subset_index, _subset_size, variant_idx, _state_ptr, _pgv.genovec);
+    if (reterr != plink2::kPglRetSuccess) {
+      char errstr_buf[256];
+      sprintf(errstr_buf, "PgrGet() error %d", static_cast<int>(reterr));
+      stop(errstr_buf);
+    }
+    uintptr_t* col_pointer = &((*Mptr)[col_idx * word_ct]);
+    memcpy(col_pointer, _pgv.genovec, byte_ct);
+    plink2::ZeroTrailingNyps(_subset_size, col_pointer);
+  }
+}
+
 void RPgenReader::ReadList(NumericMatrix buf, IntegerVector variant_subset, bool meanimpute) {
   if (!_info_ptr) {
     stop("pgen is closed");
@@ -625,6 +681,42 @@ void RPgenReader::FillVariantScores(NumericVector result, NumericVector weights,
     const double* wts = &(weights[0]);
     result[ulii] = plink2::LinearCombinationMeanimpute(wts, _pgv.genovec, _pgv.dosage_present, _pgv.dosage_main, _subset_size, dosage_ct);
   }
+}
+
+void RPgenReader::ReadDiffListOrGenovec(IntegerVector variant_subset) {
+  if (!_info_ptr) {
+    stop("pgen is closed");
+  }
+  // assume that buf has the correct dimensions
+  const uintptr_t vsubset_size = variant_subset.size();
+  const uint32_t raw_variant_ct = _info_ptr->raw_variant_ct;
+  uint32_t max_simple_difflist_len = _subset_size/32;
+  uint32_t difflist_len;
+  uint32_t difflist_common_geno;
+  uintptr_t* main_raregeno = (uintptr_t*)malloc(_subset_size);
+  uint32_t* difflist_sample_ids = (uint32_t*)malloc(_subset_size);
+  Rprintf("_subset_size is %d\n", _subset_size);
+  Rprintf("main difflist_sample_ids points to %p before allocation\n", difflist_sample_ids);
+  plink2::PglErr reterr =  PgrGetDifflistOrGenovec(_subset_include_vec, _subset_index, _subset_size, max_simple_difflist_len, 0, _state_ptr, _pgv.genovec, &difflist_common_geno, main_raregeno, difflist_sample_ids, &difflist_len);
+  Rprintf("main difflist_sample_ids points to %p after allocation\n", difflist_sample_ids);
+
+  Rprintf("difflist_len is %d\n", difflist_len);
+  Rprintf("difflist_common_geno is %d\n",difflist_common_geno);
+  for(int j = 0; j < 10; ++j)
+  {
+    Rprintf("difflist_sample_ids[%d] is %d\n",j, difflist_sample_ids[j]);
+  }
+
+  printBits(8,  main_raregeno);
+
+
+  if (reterr != plink2::kPglRetSuccess) {
+    char errstr_buf[256];
+    sprintf(errstr_buf, "PgrGetD() error %d", static_cast<int>(reterr));
+    stop(errstr_buf);
+  }
+  free(main_raregeno);
+  free(difflist_sample_ids);
 }
 
 void RPgenReader::Close() {
@@ -708,6 +800,62 @@ void RPgenReader::ReadAllelesPhasedInternal(int variant_idx) {
 RPgenReader::~RPgenReader() {
   Close();
 }
+
+class SnpMatrix
+{
+  private:
+   uintptr_t* M;
+   uint32_t no;
+   uint32_t ni;
+   bool matrix_set;
+   uint32_t word_ct;
+  
+  public:
+  SnpMatrix():M(nullptr) {
+    matrix_set = false;
+  }
+
+  uint32_t get_no(){return no;}
+
+  uint32_t get_ni(){return ni;}
+
+  // Compute sum_i v_i * (X[i, j] - mu)/sigma
+  double dot_product(uint32_t j, double *v, double mu, double sigma) {
+    if(!matrix_set) {
+      stop("Matrix is not loaded yet\n");
+    }
+    if(j >= no) {
+      stop("column index out of range");
+    }
+
+    double buf[7];
+    plink2::GetWeightsByValueNoDosage(v, &(M[j*word_ct]), no, buf);
+    double xmean = (buf[4] + 2* buf[5])/(no - buf[6]);
+    double result = (-mu)*buf[0] + (1-mu)*buf[1] + (2-mu)*buf[2] + (xmean - mu)*buf[3];
+
+    result /= sigma;
+    return result;
+  }
+
+  void SetMatrix(RPgenReader* rp, IntegerVector variant_subset)
+  {
+    
+    no = rp->GetSubsetSize();
+    ni = variant_subset.size();
+    rp->ReadCompactListNoDosage(&M, variant_subset);
+    matrix_set = true;
+
+    const uint32_t cache_line_ct =
+        plink2::DivUp(no, plink2::kNypsPerCacheline);
+    word_ct = plink2::kWordsPerCacheline * cache_line_ct;
+  }
+
+  ~SnpMatrix(){
+    plink2::aligned_free(M);
+    Rprintf("destructor call successful\n");
+  }
+
+};
 
 // [[Rcpp::export]]
 SEXP NewPgen(String filename, Nullable<List> pvar = R_NilValue,
@@ -884,6 +1032,39 @@ IntegerMatrix ReadIntList(List pgen, IntegerVector variant_subset) {
   rp->ReadIntList(result, variant_subset);
   return result;
 }
+
+// [[Rcpp::export]]
+SEXP testing(List pgen, IntegerVector variant_subset) {
+  if (strcmp_r_c(pgen[0], "pgen")) {
+    stop("pgen is not a pgen object");
+  }
+  XPtr<class RPgenReader> rp = as<XPtr<class RPgenReader> >(pgen[1]);
+
+  XPtr<class SnpMatrix> snpmatrix(new SnpMatrix(), true);
+  snpmatrix->SetMatrix(rp, variant_subset);
+
+  return List::create(_["class"] = "SnpMatrix", _["SnpMatrix"] = snpmatrix);
+}
+
+// [[Rcpp::export]]
+double test_multiply(List m, NumericVector v, double mu, double sigma) {
+  if (strcmp_r_c(m[0], "SnpMatrix")) {
+    stop("not a SnpMatrix object");
+  }
+  XPtr<class SnpMatrix> snpmatrix = as<XPtr<class SnpMatrix> >(m[1]);
+
+  if(v.size() != snpmatrix->get_no()) {
+    stop("non-conformable vector size\n");
+  }
+  for(int j = 0; j < 10; ++j) {
+    double result = snpmatrix->dot_product(j, &v[0], mu, sigma);
+    Rprintf("result is %f\n", result);
+  }
+
+
+  return 0.0;
+}
+
 
 // [[Rcpp::export]]
 NumericMatrix ReadList(List pgen, IntegerVector variant_subset, bool meanimpute = false) {

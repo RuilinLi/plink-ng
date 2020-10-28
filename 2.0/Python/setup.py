@@ -14,7 +14,7 @@ ext_modules = [
               # overload of uint32_t operator
               # extra_compile_args = ["-std=c++11", "-Wno-unused-function"],
               # extra_link_args = ["-std=c++11"],
-              extra_compile_args = ["-std=c++98", "-Wno-unused-function", "-Wno-macro-redefined"],
+              extra_compile_args = ["-std=c++98", "-Wno-unused-function", "-Wno-macro-redefined", "-O3"],
               extra_link_args = ["-std=c++98"],
               include_dirs = [np.get_include()]
               )

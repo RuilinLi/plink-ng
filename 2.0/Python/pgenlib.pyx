@@ -2,6 +2,7 @@
 # from libc.stdlib cimport malloc, free
 from libc.stdint cimport int64_t, uintptr_t, uint32_t, int32_t, uint16_t, uint8_t, int8_t
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
+from libc.string cimport memcpy
 # from cpython.view cimport array as cvarray
 import numpy as np
 cimport numpy as np
@@ -56,6 +57,8 @@ cdef extern from "../pgenlib_ffi_support.h" namespace "plink2":
     void AlleleCodesToGenoarrUnsafe(const int32_t* allele_codes, const unsigned char* phasepresent_bytes, uint32_t sample_ct, uintptr_t* genoarr, uintptr_t* phasepresent, uintptr_t* phaseinfo)
     void FloatsToDosage16(const float* floatarr, uint32_t sample_ct, uint32_t hard_call_halfdist, uintptr_t* genoarr, uintptr_t* dosage_present, uint16_t* dosage_main, uint32_t* dosage_ct_ptr)
     void DoublesToDosage16(const double* doublearr, uint32_t sample_ct, uint32_t hard_call_halfdist, uintptr_t* genoarr, uintptr_t* dosage_present, uint16_t* dosage_main, uint32_t* dosage_ct_ptr)
+    float LinearCombinationNoDosageNoOffsetf(const float* weights, const uintptr_t* genoarr, uint32_t sample_ct)
+    void accumulate_vector(const uintptr_t* genoarr, float d, float * r, uint32_t sample_ct)
 
     cdef enum:
         k1LU
@@ -73,6 +76,8 @@ cdef extern from "../pgenlib_ffi_support.h" namespace "plink2":
         kNypsPerVec
     cdef enum:
         kNypsPerCacheline
+    cdef enum:
+        kWordsPerCacheline
     cdef enum:
         kBytesPerVec
     cdef enum:
@@ -145,6 +150,8 @@ cdef extern from "../include/pgenlib_read.h" namespace "plink2":
 
     PglErr PgrGet1D(const uintptr_t* sample_include, PgrSampleSubsetIndexStruct pssi, uint32_t sample_ct, uint32_t vidx, AlleleCode allele_idx, PgenReaderStruct* pgr_ptr, uintptr_t* allele_countvec, uintptr_t* dosage_present, uint16_t* dosage_main, uint32_t* dosage_ct_ptr)
 
+    PglErr PgrGet(const uintptr_t* sample_include, PgrSampleSubsetIndexStruct pssi, uint32_t sample_ct, uint32_t vidx, PgenReaderStruct* pgr_ptr, uintptr_t* genovec)
+
     PglErr PgrGetCounts(const uintptr_t* sample_include, const uintptr_t* sample_include_interleaved_vec, PgrSampleSubsetIndexStruct pssi, uint32_t sample_ct, uint32_t vidx, PgenReaderStruct* pgr_ptr, uint32_t* genocounts)
 
     BoolErr CleanupPgfi(PgenFileInfo* pgfip, PglErr* reterrp)
@@ -181,6 +188,8 @@ cdef extern from "../include/pgenlib_write.h" namespace "plink2":
 
     BoolErr CleanupSpgw(STPgenWriter* spgwp, PglErr* reterrp)
 
+cdef extern from "../include/pgenlib_misc.h" namespace "plink2":
+    void ZeroTrailingNyps(uintptr_t nyp_ct, uintptr_t* bitarr)
 
 cdef class PgenReader:
     # todo: nonref_flags, multiallelic variant support
@@ -390,6 +399,27 @@ cdef class PgenReader:
             GenoarrToInt64sMinus9(self._genovec, self._subset_size, data64_ptr)
         else:
             raise RuntimeError("Invalid read() geno_int_out array element type (int8, int32, or int64 expected).")
+        return
+
+
+    cdef readCompact(self, np.ndarray[np.uint32_t] variant_idxs,  uintptr_t *matrix):
+        cdef uint32_t variant_idx_ct = <uint32_t>variant_idxs.shape[0]
+        cdef uint32_t raw_variant_ct = self._info_ptr[0].raw_variant_ct
+        cdef uint32_t cache_line_ct = DivUp(self._subset_size, kNypsPerCacheline)
+        cdef uint32_t word_ct = kWordsPerCacheline * cache_line_ct
+        cdef uint32_t byte_ct = cache_line_ct * kCacheline
+        cdef PglErr reterr
+        cdef uintptr_t* col_pointer
+        for variant_list_idx in range(variant_idx_ct):
+            variant_idx = variant_idxs[variant_list_idx]
+            if variant_idx >= raw_variant_ct:
+                raise RuntimeError("read_list() variant index too large (" + str(variant_idx) + "; only " + str(raw_variant_ct) + " in file)")
+            reterr = PgrGet(self._subset_include_vec, self._subset_index, self._subset_size, variant_list_idx, self._state_ptr, self._genovec)
+            if reterr != kPglRetSuccess:
+                raise RuntimeError("read() error " + str(reterr))
+            col_pointer = &(matrix[variant_list_idx * word_ct])
+            memcpy(col_pointer, self._genovec, byte_ct)
+            ZeroTrailingNyps(self._subset_size, col_pointer)
         return
 
 
@@ -1431,3 +1461,59 @@ cdef class PgenWriter:
                 aligned_free(self._nonref_flags)
             PyMem_Free(self._state_ptr)
         return
+cdef class SnpMatrix:
+    cdef uintptr_t* _matrix
+    cdef uint32_t _no
+    cdef uint32_t _ni
+    cdef uint32_t _matrix_set
+    cdef uint32_t _word_ct
+
+    def __cinit__(self):
+        self._matrix = NULL
+        self._matrix_set = 0
+        self._no = 0
+        self._ni = 0
+        self._word_ct = 0
+
+    cpdef load_matrix(self, PgenReader pr, np.ndarray[np.uint32_t, ndim=1] variant_idxs):
+        if (self._matrix_set):
+            raise RuntimeError("Matrix already loaded.")
+        self._no = pr._subset_size
+        self._ni = <uint32_t>variant_idxs.shape[0]
+        cdef uint32_t cache_line_ct = DivUp(self._no, kNypsPerCacheline);
+        self._word_ct = kWordsPerCacheline * cache_line_ct;
+        cdef uint32_t byte_ct = cache_line_ct * kCacheline;
+        if cachealigned_malloc(byte_ct * self._ni, &self._matrix):
+            raise MemoryError()
+        pr.readCompact(variant_idxs, self._matrix)
+        self._matrix_set = 1
+        print("allocation successful")
+
+    def __dealloc__(self):
+        if self._matrix_set:
+            aligned_free(self._matrix)
+
+    def right_mulv(self, np.ndarray[np.float32_t, ndim=1] r):
+        if(self._no != <uint32_t>r.shape[0]):
+            raise RuntimeError("Vector does not match matrix dimension.")
+        if not r.flags["C_CONTIGUOUS"]:
+            raise RuntimeError("Vector has to be C_CONTIGUOUS")
+        result = np.empty(self._ni, dtype=np.float32)
+        cdef float* rptr = <float*> r.data
+        for i in range(self._ni):
+            result[i] = LinearCombinationNoDosageNoOffsetf(rptr, &(self._matrix[i * self._word_ct]), self._no)
+        return result
+
+    
+    def left_mulv(self, np.ndarray[np.float32_t, ndim=1] v):
+        if(self._ni != <uint32_t>v.shape[0]):
+            raise RuntimeError("Vector does not match matrix dimension.")
+
+        cdef np.ndarray result = np.zeros((self._no,), dtype=np.float32)
+        cdef float* result_ptr = <float*> result.data
+        for i in range(self._ni):
+            accumulate_vector(&(self._matrix[i * self._word_ct]), v[i], result_ptr, self._no)
+        return result
+
+
+

@@ -61,6 +61,14 @@ ReadIntList <- function(pgen, variant_subset) {
     .Call(`_pgenlibr_ReadIntList`, pgen, variant_subset)
 }
 
+testing <- function(pgen, variant_subset) {
+    .Call(`_pgenlibr_testing`, pgen, variant_subset)
+}
+
+test_multiply <- function(m, v, mu, sigma) {
+    .Call(`_pgenlibr_test_multiply`, m, v, mu, sigma)
+}
+
 ReadList <- function(pgen, variant_subset, meanimpute = FALSE) {
     .Call(`_pgenlibr_ReadList`, pgen, variant_subset, meanimpute)
 }

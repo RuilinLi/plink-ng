@@ -94,6 +94,9 @@ void AlleleCodesToGenoarrUnsafe(const int32_t* allele_codes, const unsigned char
 void FloatsToDosage16(const float* floatarr, uint32_t sample_ct, uint32_t hard_call_halfdist, uintptr_t* genoarr, uintptr_t* dosage_present, uint16_t* dosage_main, uint32_t* dosage_ct_ptr);
 
 void DoublesToDosage16(const double* doublearr, uint32_t sample_ct, uint32_t hard_call_halfdist, uintptr_t* genoarr, uintptr_t* dosage_present, uint16_t* dosage_main, uint32_t* dosage_ct_ptr);
+void GetWeightsByValueNoDosage(const double* weights, const uintptr_t* genoarr, uint32_t sample_ct, double* buf);
+float LinearCombinationNoDosageNoOffsetf(const float* weights, const uintptr_t* genoarr, uint32_t sample_ct);
+void accumulate_vector(const uintptr_t* genoarr, float d, float * r, uint32_t sample_ct);
 
 #ifdef __cplusplus
 }  // namespace plink2
