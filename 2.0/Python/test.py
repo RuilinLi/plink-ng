@@ -16,13 +16,6 @@ pr = PgenReader(b'/local-scratch/mrivas/ukb24983_exomeOQFE.pgen', sample_subset=
 pr.get_raw_sample_ct()
 pr.get_variant_ct()
 
-
-
-n = 10000
-p = 100
-subsample = np.array(range(n), np.uint32)
-variant_idxs = np.array(range(p), np.uint32)
-
 # Load compact matrix in memory using the pgenReader object and the variant index
 X = SnpMatrix()
 X.load_matrix(pr, variant_idxs)
