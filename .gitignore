@@ -1,3 +1,6 @@
 # Ignore zlib download
 zlib-1.2.11*
 .Rproj.user
+toy*
+*.so
+2.0/pgenlibr/tests/
