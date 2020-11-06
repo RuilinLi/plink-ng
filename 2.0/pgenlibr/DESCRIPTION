@@ -9,4 +9,4 @@ Description: A thin wrapper over PLINK 2's core libraries which provides an R
   interface for reading .pgen files.  A minimal .pvar loader is also included.
 License: LGPL (>= 3)
 Imports: Rcpp (>= 1.0.1)
-LinkingTo: Rcpp
+LinkingTo: Rcpp, glmnetMatrix

@@ -577,63 +577,43 @@ void DoublesToDosage16(const double* doublearr, uint32_t sample_ct, uint32_t har
   *dosage_ct_ptr = dosage_main_iter - dosage_main;
 }
 
-void GetWeightsByValueNoDosage(const double* weights, const uintptr_t* genoarr, uint32_t sample_ct, double* buf) {
-  const uint32_t word_ct = DivUp(sample_ct, kBitsPerWordD2);
-  const uint32_t trailingNyps_keep = sample_ct - kBitsPerWordD2 * (word_ct - 1);
-  double result0 = 0.0;
-  double result = 0.0;
-  double result2 = 0.0;
-  double miss_weight = 0.0;
-  uint32_t count1 = 0;
-  uint32_t count2 = 0;
-  uint32_t count_missing = 0;
-
-  for (uint32_t widx = 0; widx != word_ct; ++widx) {
-    const uintptr_t geno_word = genoarr[widx];
-
-    const double* cur_weights = &(weights[widx * kBitsPerWordD2]);
-    uintptr_t geno_word1 = geno_word & kMask5555;
-    uintptr_t geno_word2 = (geno_word >> 1) & kMask5555;
-    uintptr_t geno_word0 = (~geno_word1) & (~geno_word2) & kMask5555;
-    if(widx == (word_ct - 1)) {
-      plink2::ZeroTrailingNyps(trailingNyps_keep, &geno_word0);
+void GetWeightsByValueNoDosage(const double* weights, const uintptr_t* genoarr,
+                               uint32_t sample_ct, double* buf) {
+    const uint32_t word_ct = DivUp(sample_ct, kBitsPerWordD2);
+    double result = 0.0;
+    double result2 = 0.0;
+    double miss_weight = 0.0;
+    for (uint32_t widx = 0; widx != word_ct; ++widx) {
+        const uintptr_t geno_word = genoarr[widx];
+        if (!geno_word) {
+            continue;
+        }
+        const double* cur_weights = &(weights[widx * kBitsPerWordD2]);
+        uintptr_t geno_word1 = geno_word & kMask5555;
+        uintptr_t geno_word2 = (geno_word >> 1) & kMask5555;
+        uintptr_t geno_missing_word = geno_word1 & geno_word2;
+        geno_word1 ^= geno_missing_word;
+        while (geno_word1) {
+            const uint32_t sample_idx_lowbits = ctzw(geno_word1) / 2;
+            result += cur_weights[sample_idx_lowbits];
+            geno_word1 &= geno_word1 - 1;
+        }
+        geno_word2 ^= geno_missing_word;
+        while (geno_word2) {
+            const uint32_t sample_idx_lowbits = ctzw(geno_word2) / 2;
+            result2 += cur_weights[sample_idx_lowbits];
+            geno_word2 &= geno_word2 - 1;
+        }
+        while (geno_missing_word) {
+            const uint32_t sample_idx_lowbits = ctzw(geno_missing_word) / 2;
+            miss_weight += cur_weights[sample_idx_lowbits];
+            geno_missing_word &= geno_missing_word - 1;
+        }
     }
-    uintptr_t geno_missing_word = geno_word1 & geno_word2;
-    while (geno_word0) {
-      const uint32_t sample_idx_lowbits = ctzw(geno_word0) / 2;
-      result0 += cur_weights[sample_idx_lowbits];
-      geno_word0 &= geno_word0 - 1;
-    }
-    geno_word1 ^= geno_missing_word;
-    while (geno_word1) {
-      const uint32_t sample_idx_lowbits = ctzw(geno_word1) / 2;
-      result += cur_weights[sample_idx_lowbits];
-      geno_word1 &= geno_word1 - 1;
-      count1++;
-    }
-    geno_word2 ^= geno_missing_word;
-    while (geno_word2) {
-      const uint32_t sample_idx_lowbits = ctzw(geno_word2) / 2;
-      result2 += cur_weights[sample_idx_lowbits];
-      geno_word2 &= geno_word2 - 1;
-      count2++;
-    }
-    while (geno_missing_word) {
-      const uint32_t sample_idx_lowbits = ctzw(geno_missing_word) / 2;
-      miss_weight += cur_weights[sample_idx_lowbits];
-      geno_missing_word &= geno_missing_word - 1;
-      count_missing++;
-    }
-  }
-  buf[0] = result0;
-  buf[1] = result;
-  buf[2] = result2;
-  buf[3] = miss_weight;
-  buf[4] = (double)count1;
-  buf[5] = (double)count2;
-  buf[6] = (double)count_missing;
+    buf[0] = result;
+    buf[1] = result2;
+    buf[2] = miss_weight;
 }
-
 
 float LinearCombinationNoDosageNoOffsetf(const float* weights, const uintptr_t* genoarr, uint32_t sample_ct) {
   const uint32_t word_ct = DivUp(sample_ct, kBitsPerWordD2);
@@ -680,6 +660,8 @@ float LinearCombinationNoDosageNoOffsetf(const float* weights, const uintptr_t* 
   }
   return result;
 }
+
+
 
 // Set r_i += d * x_i
 void accumulate_vector(const uintptr_t* genoarr, float d, float * r, uint32_t sample_ct)
