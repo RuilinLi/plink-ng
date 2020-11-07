@@ -5,18 +5,19 @@
 
 using namespace Rcpp;
 
-// NewPlinkMatrix
-SEXP NewPlinkMatrix(String filename, IntegerVector variant_subset, Nullable<IntegerVector> sample_subset, Nullable<List> pvar, Nullable<int> raw_sample_ct);
-RcppExport SEXP _pgenlibr_NewPlinkMatrix(SEXP filenameSEXP, SEXP variant_subsetSEXP, SEXP sample_subsetSEXP, SEXP pvarSEXP, SEXP raw_sample_ctSEXP) {
+// getcompactptr
+SEXP getcompactptr(String filename, IntegerVector variant_subset, Nullable<IntegerVector> sample_subset, NumericVector xim, Nullable<List> pvar, Nullable<int> raw_sample_ct);
+RcppExport SEXP _pgenlibr_getcompactptr(SEXP filenameSEXP, SEXP variant_subsetSEXP, SEXP sample_subsetSEXP, SEXP ximSEXP, SEXP pvarSEXP, SEXP raw_sample_ctSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< String >::type filename(filenameSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type variant_subset(variant_subsetSEXP);
     Rcpp::traits::input_parameter< Nullable<IntegerVector> >::type sample_subset(sample_subsetSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type xim(ximSEXP);
     Rcpp::traits::input_parameter< Nullable<List> >::type pvar(pvarSEXP);
     Rcpp::traits::input_parameter< Nullable<int> >::type raw_sample_ct(raw_sample_ctSEXP);
-    rcpp_result_gen = Rcpp::wrap(NewPlinkMatrix(filename, variant_subset, sample_subset, pvar, raw_sample_ct));
+    rcpp_result_gen = Rcpp::wrap(getcompactptr(filename, variant_subset, sample_subset, xim, pvar, raw_sample_ct));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -280,7 +281,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_pgenlibr_NewPlinkMatrix", (DL_FUNC) &_pgenlibr_NewPlinkMatrix, 5},
+    {"_pgenlibr_getcompactptr", (DL_FUNC) &_pgenlibr_getcompactptr, 6},
     {"_pgenlibr_NewPgen", (DL_FUNC) &_pgenlibr_NewPgen, 4},
     {"_pgenlibr_GetRawSampleCt", (DL_FUNC) &_pgenlibr_GetRawSampleCt, 1},
     {"_pgenlibr_GetVariantCt", (DL_FUNC) &_pgenlibr_GetVariantCt, 1},

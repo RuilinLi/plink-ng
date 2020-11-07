@@ -1,7 +1,6 @@
 #include "pgenlib_ffi_support.h"
 #include "include/pgenlib_read.h"
 #include "pvar.h"  // includes Rcpp
-#include "glmnetMatrix.h"
 
 void printBits(size_t const size, void const * const ptr)
 {
@@ -809,93 +808,21 @@ RPgenReader::~RPgenReader() {
   Close();
 }
 
-class PlinkMatrix : public MatrixGlmnet {
-   private:
-    uintptr_t* M;
-    bool matrix_set;
-    uint32_t word_ct;
-    double *xm; // Store the mean of each variant
-    bool remove_mean;
-
-   public:
-    PlinkMatrix() : M(nullptr) {
-        matrix_set = false;
-        remove_mean = false;
-        no = 0;
-        ni = 0;
-    }
-
-    // Compute sum_i v_i * (X[i, j] - mu)/sigma
-    double dot_product(int j, const double* v) {
-        if (!matrix_set) {
-            stop("Matrix is not loaded yet\n");
-        }
-        if (j >= ni) {
-            stop("column index out of range");
-        }
-
-        double buf[3];
-        plink2::GetWeightsByValueNoDosage(v, &(M[j * word_ct]), no, buf);
-        double result = buf[0] + 2 * buf[1];
-        if(remove_mean) {
-          result += buf[2] * xm[j];
-        }
-        return result;
-    }
-    double vx2(int j, const double* v) { return 0; }
-
-    void update_res(int j, double d, const double* v, double* r) { return; }
-
-    void compute_eta(double* eta, const double* a, double aint, bool has_offset,
-                     const double* offset) {
-        return;
-    }
-
-    void SetMatrix(RPgenReader* rp, IntegerVector variant_subset) {
-        close(); // remove the current matrix if any
-        no = rp->GetSubsetSize();
-        ni = variant_subset.size();
-        xm = (double*)malloc(sizeof(double)*ni);
-        rp->ReadCompactListNoDosage(&M, variant_subset, xm);
-        matrix_set = true;
-
-        const uint32_t cache_line_ct =
-            plink2::DivUp(no, plink2::kNypsPerCacheline);
-        word_ct = plink2::kWordsPerCacheline * cache_line_ct;
-    }
-
-    void close() {
-        if (matrix_set) {
-          Rprintf("try calling destructor\n");
-            plink2::aligned_free(M);
-            matrix_set = false;
-            remove_mean = false;
-            M = nullptr;
-            no = 0;
-            ni = 0;
-            free(xm);
-        }
-    }
-
-    ~PlinkMatrix() {
-        close();
-        Rprintf("destructor call successful\n");
-    }
-};
 
 static void finalizer(SEXP xptr) {
-    PlinkMatrix *p = (PlinkMatrix *)R_ExternalPtrAddr(xptr);
-    delete p;
+    uintptr_t* p = (uintptr_t*)R_ExternalPtrAddr(xptr);
+     plink2::aligned_free(p);
 }
 // [[Rcpp::export]]
-SEXP NewPlinkMatrix(String filename, IntegerVector variant_subset, 
-                    Nullable<IntegerVector> sample_subset = R_NilValue,  
+SEXP getcompactptr(String filename, IntegerVector variant_subset, 
+                    Nullable<IntegerVector> sample_subset,  NumericVector xim,
                     Nullable<List> pvar = R_NilValue, Nullable<int> raw_sample_ct = R_NilValue) {
     RPgenReader pgen;
     pgen.Load(filename, pvar, raw_sample_ct, sample_subset);
-    PlinkMatrix* matrix = new PlinkMatrix();
-    matrix->SetMatrix(&pgen, variant_subset);
-    SEXP xptr = R_MakeExternalPtr(matrix, R_NilValue, R_NilValue);
+    uintptr_t* M;
+    pgen.ReadCompactListNoDosage(&M, variant_subset, &xim[0]);
+
+    SEXP xptr = R_MakeExternalPtr(M, R_NilValue, R_NilValue);
     PROTECT(xptr);
     R_RegisterCFinalizerEx(xptr, finalizer, TRUE);
     UNPROTECT(1);
@@ -1078,36 +1005,6 @@ IntegerMatrix ReadIntList(List pgen, IntegerVector variant_subset) {
   return result;
 }
 
-// SEXP testing(List pgen, IntegerVector variant_subset) {
-//   if (strcmp_r_c(pgen[0], "pgen")) {
-//     stop("pgen is not a pgen object");
-//   }
-//   XPtr<class RPgenReader> rp = as<XPtr<class RPgenReader> >(pgen[1]);
-
-//   XPtr<class SnpMatrix> snpmatrix(new SnpMatrix(), true);
-//   SnpMatrix* snpmatrix = new SnpMatrix();
-//   snpmatrix->SetMatrix(rp, variant_subset);
-
-//   return List::create(_["class"] = "SnpMatrix", _["SnpMatrix"] = snpmatrix);
-// }
-
-// double test_multiply(List m, NumericVector v, double mu, double sigma) {
-//   if (strcmp_r_c(m[0], "SnpMatrix")) {
-//     stop("not a SnpMatrix object");
-//   }
-//   XPtr<class SnpMatrix> snpmatrix = as<XPtr<class SnpMatrix> >(m[1]);
-
-//   if(v.size() != snpmatrix->get_no()) {
-//     stop("non-conformable vector size\n");
-//   }
-//   for(int j = 0; j < 10; ++j) {
-//     double result = snpmatrix->dot_product(j, &v[0], mu, sigma);
-//     Rprintf("result is %f\n", result);
-//   }
-
-
-//   return 0.0;
-// }
 
 
 // [[Rcpp::export]]
