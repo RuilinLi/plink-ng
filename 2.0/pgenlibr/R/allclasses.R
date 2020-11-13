@@ -85,6 +85,7 @@ setMethod(
         }
         x@covs = newcov
         x@Dim[2] = x@Dim[2] + ncol(newcov)
+        x@ncov = ncol(newcov)
         return(x)
     }
 )
