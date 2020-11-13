@@ -32,6 +32,8 @@ PlinkMatrix <- function(fname, samples, variants, covs=NULL) {
       )
 }
 setGeneric("actualize", function(x) standardGeneric("actualize"))
+setGeneric("setcovs", function(x, newcov) standardGeneric("setcovs"))
+
 
 #' @export
 setMethod(
@@ -48,7 +50,6 @@ setMethod(
     }
 )
 
-#' @export
 #' @export
 PlinkMatrixFromPgen <- function(pgen, variants, covs=NULL){
     if (length(variants) != length(unique(variants))) {
@@ -70,6 +71,23 @@ PlinkMatrixFromPgen <- function(pgen, variants, covs=NULL){
         Dim = dimensions, xim = xim, ncov = ncov, covs = covs
       )
 }
+
+#' @export
+setMethod(
+    "setcovs",
+    c("PlinkMatrix", "matrix"),
+    function(x, newcov) {
+        if(!is.null(x@covs)){
+            stop("Already has covariates")
+        }
+        if(nrow(newcov) != x@Dim[1]){
+            stop("covariates dimension does not match that of the snp matrix")
+        }
+        x@covs = newcov
+        x@Dim[2] = x@Dim[2] + ncol(newcov)
+        return(x)
+    }
+)
 
 #' @export
 setMethod(
