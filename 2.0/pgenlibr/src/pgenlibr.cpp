@@ -830,6 +830,23 @@ SEXP getcompactptr(String filename, IntegerVector variant_subset,
 }
 
 // [[Rcpp::export]]
+SEXP getcompactptrfromPgen(List pgen, IntegerVector variant_subset, NumericVector xim, IntegerVector nsample) {
+    if (strcmp_r_c(pgen[0], "pgen")) {
+      stop("pgen is not a pgen object");
+    }
+    uintptr_t* M;
+    XPtr<class RPgenReader> rp = as<XPtr<class RPgenReader> >(pgen[1]);
+    rp->ReadCompactListNoDosage(&M, variant_subset, &xim[0]);
+    nsample[0] = rp->GetSubsetSize();
+
+    SEXP xptr = R_MakeExternalPtr(M, R_NilValue, R_NilValue);
+    PROTECT(xptr);
+    R_RegisterCFinalizerEx(xptr, finalizer, TRUE);
+    UNPROTECT(1);
+    return xptr;
+}
+
+// [[Rcpp::export]]
 SEXP NewPgen(String filename, Nullable<List> pvar = R_NilValue,
              Nullable<int> raw_sample_ct = R_NilValue,
              Nullable<IntegerVector> sample_subset = R_NilValue) {

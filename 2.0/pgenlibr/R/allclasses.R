@@ -38,11 +38,38 @@ setMethod(
     "actualize",
     "PlinkMatrix",
     function(x) {
+        if(x@fname == "fromPgen"){
+            warning("already actualized")
+            return(x)
+        }
         x@xim = double(length(x@variants))
         x@ptr = getcompactptr(x@fname, x@variants,x@samples, x@xim)
         return(x)
     }
 )
+
+#' @export
+#' @export
+PlinkMatrixFromPgen <- function(pgen, variants, covs=NULL){
+    if (length(variants) != length(unique(variants))) {
+        stop("Must not have duplicated variant index.")
+    }
+    sample_size = 0L
+    xim = double(length(variants))
+    xptr = getcompactptrfromPgen(pgen, variants, xim, sample_size)
+    dimensions <- c(sample_size, length(variants))
+    ncov = 0L
+    if(!is.null(covs)) {
+        if(nrow(covs) != dimensions[1]) {
+            stop("Covariates must have same number of rows as SNP Matrix")
+        }
+        ncov = ncol(covs)
+        dimensions[2] = dimensions[2] + ncov
+    }
+    new("PlinkMatrix", ptr = xptr, samples = 0L, variants = variants, fname = "fromPgen", 
+        Dim = dimensions, xim = xim, ncov = ncov, covs = covs
+      )
+}
 
 #' @export
 setMethod(
