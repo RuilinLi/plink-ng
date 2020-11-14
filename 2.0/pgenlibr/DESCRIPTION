@@ -10,4 +10,4 @@ Description: A thin wrapper over PLINK 2's core libraries which provides an R
 License: LGPL (>= 3)
 Imports: Rcpp (>= 1.0.1)
 LinkingTo: Rcpp
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
