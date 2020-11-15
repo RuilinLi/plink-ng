@@ -2,22 +2,6 @@
 #include "include/pgenlib_read.h"
 #include "pvar.h"  // includes Rcpp
 
-void printBits(size_t const size, void const * const ptr)
-{
-    unsigned char *b = (unsigned char*) ptr;
-    unsigned char byte;
-    int i, j;
-    
-    for (i = size-1; i >= 0; i--) {
-        for (j = 7; j >= 0; j--) {
-            byte = (b[i] >> j) & 1;
-            printf("%u", byte);
-        }
-    }
-    puts("");
-}
-
-
 class RPgenReader {
 public:
   // imitates Python/pgenlib.pyx
@@ -702,19 +686,8 @@ void RPgenReader::ReadDiffListOrGenovec(IntegerVector variant_subset) {
   uint32_t difflist_common_geno;
   uintptr_t* main_raregeno = (uintptr_t*)malloc(_subset_size);
   uint32_t* difflist_sample_ids = (uint32_t*)malloc(_subset_size);
-  Rprintf("_subset_size is %d\n", _subset_size);
-  Rprintf("main difflist_sample_ids points to %p before allocation\n", difflist_sample_ids);
+
   plink2::PglErr reterr =  PgrGetDifflistOrGenovec(_subset_include_vec, _subset_index, _subset_size, max_simple_difflist_len, 0, _state_ptr, _pgv.genovec, &difflist_common_geno, main_raregeno, difflist_sample_ids, &difflist_len);
-  Rprintf("main difflist_sample_ids points to %p after allocation\n", difflist_sample_ids);
-
-  Rprintf("difflist_len is %d\n", difflist_len);
-  Rprintf("difflist_common_geno is %d\n",difflist_common_geno);
-  for(int j = 0; j < 10; ++j)
-  {
-    Rprintf("difflist_sample_ids[%d] is %d\n",j, difflist_sample_ids[j]);
-  }
-
-  printBits(8,  main_raregeno);
 
 
   if (reterr != plink2::kPglRetSuccess) {
@@ -811,7 +784,7 @@ RPgenReader::~RPgenReader() {
 
 static void finalizer(SEXP xptr) {
     uintptr_t* p = (uintptr_t*)R_ExternalPtrAddr(xptr);
-     plink2::aligned_free(p);
+    plink2::aligned_free(p);
 }
 // [[Rcpp::export]]
 SEXP getcompactptr(String filename, IntegerVector variant_subset, 
