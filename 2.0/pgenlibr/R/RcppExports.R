@@ -97,3 +97,11 @@ ClosePvar <- function(pvar) {
     invisible(.Call(`_pgenlibr_ClosePvar`, pvar))
 }
 
+SparseTest <- function(pgen, variant_subset, v) {
+    .Call(`_pgenlibr_SparseTest`, pgen, variant_subset, v)
+}
+
+SparseTest2 <- function(pgen, variant_subset, v) {
+    .Call(`_pgenlibr_SparseTest2`, pgen, variant_subset, v)
+}
+
