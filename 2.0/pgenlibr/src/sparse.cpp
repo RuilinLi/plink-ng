@@ -1,4 +1,7 @@
 #include "pgenlibr.h"
+#include <chrono>
+using namespace std; 
+using namespace std::chrono;
 
 void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uint32_t vsubset_size)
 {
@@ -59,6 +62,10 @@ void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uin
             x.xim[i] = (numer/denom);
             total_genovec++;
             continue;
+        }
+
+        if(difflist_common_geno != 0){
+            stop("The common geno for sparse columns must be 0\n");
         }
 
 
@@ -474,7 +481,10 @@ NumericVector SparseTest(List pgen, IntegerVector variant_subset, NumericVector 
   NumericVector result(variant_subset.size());
   sparse_snp x;
   rp->LoadSparse(x, &variant_subset[0], variant_subset.size());
+  auto start = high_resolution_clock::now(); 
   x.vtx(&v[0], &result[0]);
+  auto stop = high_resolution_clock::now();
+  Rprintf("time elapsed is %d microseconds", duration_cast<microseconds>(stop - start));
   return result;
 }
 
@@ -487,6 +497,9 @@ NumericVector SparseTest2(List pgen, IntegerVector variant_subset, NumericVector
   NumericVector result(rp->GetSubsetSize());
   sparse_snp x;
   rp->LoadSparse(x, &variant_subset[0], variant_subset.size());
+  auto start = high_resolution_clock::now(); 
   x.xv(&v[0], &result[0]);
+  auto stop = high_resolution_clock::now();
+  Rprintf("time elapsed is %d microseconds", duration_cast<microseconds>(stop - start));
   return result;
 }
