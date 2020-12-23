@@ -53,8 +53,6 @@ void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uin
         STD_ARRAY_DECL(uint32_t, 4, genocounts); // impute mean
 
         if(difflist_common_geno == UINT32_MAX){
-            //std::cout << "encountered genovec, stop here \n" << std::endl; 
-            //goto freemem;
             plink2::ZeroTrailingNyps(_subset_size, _pgv.genovec);
             plink2::GenoarrCountFreqsUnsafe(_pgv.genovec, _subset_size, genocounts);
             const double numer = plink2::u63tod(genocounts[1] + 2 * genocounts[2]);
@@ -64,6 +62,8 @@ void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uin
             continue;
         }
 
+        // It's possible, though unlikely, that in a subset the difflist_common_geno is 1 or 2.
+        // This case is currently not handled
         if(difflist_common_geno != 0){
             stop("The common geno for sparse columns must be 0\n");
         }
