@@ -45,6 +45,8 @@ class sparse_snp{
       void vtx(const double *v, double *result);
       // Compute result = result + X v
       void xv(const double *v, double *result);
+      uint32_t Getnrow();
+      uint32_t Getncol();
 };
 
 

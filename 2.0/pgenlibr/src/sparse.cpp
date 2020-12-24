@@ -3,6 +3,9 @@
 using namespace std; 
 using namespace std::chrono;
 
+static constexpr int ROW_BLOCK = 8;
+static constexpr int COL_BLOCK = 8;
+
 void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uint32_t vsubset_size)
 {
     if (!_info_ptr)
@@ -64,9 +67,9 @@ void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uin
 
         // It's possible, though unlikely, that in a subset the difflist_common_geno is 1 or 2.
         // This case is currently not handled
-        if(difflist_common_geno != 0){
-            stop("The common geno for sparse columns must be 0\n");
-        }
+        // if(difflist_common_geno != 0){
+        //     stop("The common geno for sparse columns must be 0\n");
+        // }
 
 
         plink2::ZeroTrailingNyps(difflist_len, main_raregeno);
@@ -300,8 +303,8 @@ sparse_snp::sparse_snp()
     dense_ind = nullptr;
     loaded = false;
     xim = nullptr;
-    rowblock = 8;
-    colblock = 2; // testing only must be greater than the number of columns
+    rowblock = ROW_BLOCK;
+    colblock = COL_BLOCK; // testing only must be greater than the number of columns
     genovec_word_ct = 0;
     ndense = 0;
 }
@@ -322,8 +325,9 @@ void sparse_snp::vtx(const double *v, double * result){
     if(!loaded){
         stop("matrix not loaded yet");
     }
-
-    // Sparse columns 
+    uint32_t local_word_ct = plink2::DivUp(no, plink2::kBitsPerWordD2);
+    // Sparse columns
+    #pragma omp parallel for
     for(uint32_t colblock_ind = 0; colblock_ind < colblock; ++colblock_ind){
         for(uint32_t rowblock_ind = 0; rowblock_ind < rowblock; ++rowblock_ind) {
             uint64_t start = blk_ptr[colblock_ind * rowblock + rowblock_ind];
@@ -359,41 +363,44 @@ void sparse_snp::vtx(const double *v, double * result){
             }
 
         }
-    }
-
-    // Dense columns, maybe use existing code?
-    uint32_t local_word_ct = plink2::DivUp(no, plink2::kBitsPerWordD2);
-    for (uint32_t densecol_ind = 0; densecol_ind < ndense; ++densecol_ind) {
-        uint32_t colind = dense_ind[densecol_ind];
-        const uintptr_t* col = &(genovec[densecol_ind * genovec_word_ct]);
-        double result_1 = 0;
-        double result_2 = 0;
-        double result_missing = 0;
-        for (uint32_t widx = 0; widx < local_word_ct; ++widx) {
-            const uintptr_t geno_word = col[widx];
-            const double *cur_weights = &(v[widx * plink2::kBitsPerWordD2]);
-            uintptr_t geno_word1 = geno_word & plink2::kMask5555;
-            uintptr_t geno_word2 = (geno_word >> 1) & plink2::kMask5555;
-            uintptr_t geno_missing_word = geno_word1 & geno_word2;
-            geno_word1 ^= geno_missing_word;
-            while (geno_word1) {
-                const uint32_t sample_idx_lowbits = plink2::ctzw(geno_word1) / 2;
-                result_1 +=  cur_weights[sample_idx_lowbits];
-                geno_word1 &= geno_word1 - 1;
-            }
-            geno_word2 ^= geno_missing_word;
-            while (geno_word2) {
-                const uint32_t sample_idx_lowbits = plink2::ctzw(geno_word2) / 2;
-                result_2 +=  cur_weights[sample_idx_lowbits];
-                geno_word2 &= geno_word2 - 1;
-            }
-            while (geno_missing_word) {
-                const uint32_t sample_idx_lowbits = plink2::ctzw(geno_missing_word) / 2;
-                result_missing +=  cur_weights[sample_idx_lowbits];
-                geno_missing_word &= geno_missing_word - 1;
-            }
+        uint32_t len = ndense/colblock;
+        uint32_t start = len * colblock_ind;
+        uint32_t end = len * (colblock_ind + 1);
+        if(colblock_ind == (colblock - 1)){
+            end = ndense;
         }
-        result[colind] += result_1 + 2 * result_2 + xim[colind] * result_missing;
+        for(uint32_t densecol_ind = start; densecol_ind < end; ++densecol_ind){
+            uint32_t colind = dense_ind[densecol_ind];
+            const uintptr_t* col = &(genovec[densecol_ind * genovec_word_ct]);
+            double result_1 = 0;
+            double result_2 = 0;
+            double result_missing = 0;
+            for (uint32_t widx = 0; widx < local_word_ct; ++widx) {
+                const uintptr_t geno_word = col[widx];
+                const double *cur_weights = &(v[widx * plink2::kBitsPerWordD2]);
+                uintptr_t geno_word1 = geno_word & plink2::kMask5555;
+                uintptr_t geno_word2 = (geno_word >> 1) & plink2::kMask5555;
+                uintptr_t geno_missing_word = geno_word1 & geno_word2;
+                geno_word1 ^= geno_missing_word;
+                while (geno_word1) {
+                    const uint32_t sample_idx_lowbits = plink2::ctzw(geno_word1) / 2;
+                    result_1 +=  cur_weights[sample_idx_lowbits];
+                    geno_word1 &= geno_word1 - 1;
+                }
+                geno_word2 ^= geno_missing_word;
+                while (geno_word2) {
+                    const uint32_t sample_idx_lowbits = plink2::ctzw(geno_word2) / 2;
+                    result_2 +=  cur_weights[sample_idx_lowbits];
+                    geno_word2 &= geno_word2 - 1;
+                }
+                while (geno_missing_word) {
+                    const uint32_t sample_idx_lowbits = plink2::ctzw(geno_missing_word) / 2;
+                    result_missing +=  cur_weights[sample_idx_lowbits];
+                    geno_missing_word &= geno_missing_word - 1;
+                }
+            }
+            result[colind] += result_1 + 2 * result_2 + xim[colind] * result_missing;
+        }
     }
 }
 
@@ -401,6 +408,8 @@ void sparse_snp::xv(const double *v, double * result){
     if(!loaded){
         stop("matrix not loaded yet");
     }
+    uint32_t local_word_ct = plink2::DivUp(no, plink2::kBitsPerWordD2);
+    #pragma omp parallel for
     for(uint32_t rowblock_ind = 0; rowblock_ind < rowblock; ++rowblock_ind){
         for(uint32_t colblock_ind = 0; colblock_ind < colblock; ++colblock_ind) {
             uint64_t start = blk_ptr[colblock_ind * rowblock + rowblock_ind];
@@ -435,71 +444,84 @@ void sparse_snp::xv(const double *v, double * result){
             }
 
         }
-    }
-
-    // add the dense genovec to the result
-    uint32_t local_word_ct = plink2::DivUp(no, plink2::kBitsPerWordD2);
-    for (uint32_t densecol_ind = 0; densecol_ind < ndense; ++densecol_ind){
-        uint32_t colind = dense_ind[densecol_ind];
-        const uintptr_t* col = &(genovec[densecol_ind * genovec_word_ct]);
-        const double weight = v[colind];
-        const double imputed_mean = xim[colind];
-        for (uint32_t widx = 0; widx < local_word_ct; ++widx) {
-            const uintptr_t geno_word = col[widx];
-            uintptr_t geno_word1 = geno_word & plink2::kMask5555;
-            uintptr_t geno_word2 = (geno_word >> 1) & plink2::kMask5555;
-            uintptr_t geno_missing_word = geno_word1 & geno_word2;
-            geno_word1 ^= geno_missing_word;
-            while (geno_word1) {
-                const uint32_t sample_idx_lowbits = plink2::ctzw(geno_word1) / 2;
-                result[widx * plink2::kBitsPerWordD2 + sample_idx_lowbits] +=  weight;
-                geno_word1 &= geno_word1 - 1;
-            }
-            geno_word2 ^= geno_missing_word;
-            while (geno_word2) {
-                const uint32_t sample_idx_lowbits = plink2::ctzw(geno_word2) / 2;
-                result[widx * plink2::kBitsPerWordD2 + sample_idx_lowbits] +=  2 * weight;
-                geno_word2 &= geno_word2 - 1;
-            }
-            while (geno_missing_word) {
-                const uint32_t sample_idx_lowbits = plink2::ctzw(geno_missing_word) / 2;
-                result[widx * plink2::kBitsPerWordD2 + sample_idx_lowbits] +=  imputed_mean * weight;
-                geno_missing_word &= geno_missing_word - 1;
+        // put dense genovecs here
+        uint32_t len = local_word_ct/rowblock;
+        uint32_t start = len * rowblock_ind;
+        uint32_t end = len * (rowblock_ind + 1);
+        if(rowblock_ind == (rowblock - 1)){
+            end = local_word_ct;
+        }
+        for (uint32_t densecol_ind = 0; densecol_ind < ndense; ++densecol_ind){
+            uint32_t colind = dense_ind[densecol_ind];
+            const uintptr_t* col = &(genovec[densecol_ind * genovec_word_ct]);
+            const double weight = v[colind];
+            const double imputed_mean = xim[colind];
+            for (uint32_t widx = start; widx < end; ++widx) {
+                const uintptr_t geno_word = col[widx];
+                uintptr_t geno_word1 = geno_word & plink2::kMask5555;
+                uintptr_t geno_word2 = (geno_word >> 1) & plink2::kMask5555;
+                uintptr_t geno_missing_word = geno_word1 & geno_word2;
+                geno_word1 ^= geno_missing_word;
+                while (geno_word1) {
+                    const uint32_t sample_idx_lowbits = plink2::ctzw(geno_word1) / 2;
+                    result[widx * plink2::kBitsPerWordD2 + sample_idx_lowbits] +=  weight;
+                    geno_word1 &= geno_word1 - 1;
+                }
+                geno_word2 ^= geno_missing_word;
+                while (geno_word2) {
+                    const uint32_t sample_idx_lowbits = plink2::ctzw(geno_word2) / 2;
+                    result[widx * plink2::kBitsPerWordD2 + sample_idx_lowbits] +=  2 * weight;
+                    geno_word2 &= geno_word2 - 1;
+                }
+                while (geno_missing_word) {
+                    const uint32_t sample_idx_lowbits = plink2::ctzw(geno_missing_word) / 2;
+                    result[widx * plink2::kBitsPerWordD2 + sample_idx_lowbits] +=  imputed_mean * weight;
+                    geno_missing_word &= geno_missing_word - 1;
+                }
             }
         }
-
     }
+
+
 }
 
+uint32_t sparse_snp::Getnrow() {
+    return no;
+}
+
+uint32_t sparse_snp::Getncol() {
+    return ni;
+}
 
 // [[Rcpp::export]]
-NumericVector SparseTest(List pgen, IntegerVector variant_subset, NumericVector v) {
-  if (strcmp_r_c(pgen[0], "pgen")) {
+SEXP NewSparse(List pgen, IntegerVector variant_subset) {
+   if (strcmp_r_c(pgen[0], "pgen")) {
     stop("pgen is not a pgen object");
   }
   XPtr<class RPgenReader> rp = as<XPtr<class RPgenReader> >(pgen[1]);
-  NumericVector result(variant_subset.size());
-  sparse_snp x;
-  rp->LoadSparse(x, &variant_subset[0], variant_subset.size());
-  auto start = high_resolution_clock::now(); 
-  x.vtx(&v[0], &result[0]);
-  auto stop = high_resolution_clock::now();
-  Rprintf("time elapsed is %d microseconds", duration_cast<microseconds>(stop - start));
+  XPtr<class sparse_snp> xp(new sparse_snp(), true);
+  rp->LoadSparse(*xp, &variant_subset[0], variant_subset.size());
+  return List::create(_["class"] = "sparse_snp", _["sparse_snp"] = xp);
+}
+
+// [[Rcpp::export]]
+NumericVector SparseTest(List mat, NumericVector v) {
+  if (strcmp_r_c(mat[0], "sparse_snp")) {
+    stop("matrix not the right type");
+  }
+  XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
+  NumericVector result(x->Getncol());
+  x->vtx(&v[0], &result[0]);
   return result;
 }
 
 // [[Rcpp::export]]
-NumericVector SparseTest2(List pgen, IntegerVector variant_subset, NumericVector v) {
-  if (strcmp_r_c(pgen[0], "pgen")) {
-    stop("pgen is not a pgen object");
+NumericVector SparseTest2(List mat, NumericVector v) {
+  if (strcmp_r_c(mat[0], "sparse_snp")) {
+    stop("matrix not the right type");
   }
-  XPtr<class RPgenReader> rp = as<XPtr<class RPgenReader> >(pgen[1]);
-  NumericVector result(rp->GetSubsetSize());
-  sparse_snp x;
-  rp->LoadSparse(x, &variant_subset[0], variant_subset.size());
-  auto start = high_resolution_clock::now(); 
-  x.xv(&v[0], &result[0]);
-  auto stop = high_resolution_clock::now();
-  Rprintf("time elapsed is %d microseconds", duration_cast<microseconds>(stop - start));
+  XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
+  NumericVector result(x->Getnrow());
+  x->xv(&v[0], &result[0]);
   return result;
 }

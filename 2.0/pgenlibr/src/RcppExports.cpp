@@ -293,29 +293,39 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// SparseTest
-NumericVector SparseTest(List pgen, IntegerVector variant_subset, NumericVector v);
-RcppExport SEXP _pgenlibr_SparseTest(SEXP pgenSEXP, SEXP variant_subsetSEXP, SEXP vSEXP) {
+// NewSparse
+SEXP NewSparse(List pgen, IntegerVector variant_subset);
+RcppExport SEXP _pgenlibr_NewSparse(SEXP pgenSEXP, SEXP variant_subsetSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type pgen(pgenSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type variant_subset(variant_subsetSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewSparse(pgen, variant_subset));
+    return rcpp_result_gen;
+END_RCPP
+}
+// SparseTest
+NumericVector SparseTest(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_SparseTest(SEXP matSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(SparseTest(pgen, variant_subset, v));
+    rcpp_result_gen = Rcpp::wrap(SparseTest(mat, v));
     return rcpp_result_gen;
 END_RCPP
 }
 // SparseTest2
-NumericVector SparseTest2(List pgen, IntegerVector variant_subset, NumericVector v);
-RcppExport SEXP _pgenlibr_SparseTest2(SEXP pgenSEXP, SEXP variant_subsetSEXP, SEXP vSEXP) {
+NumericVector SparseTest2(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_SparseTest2(SEXP matSEXP, SEXP vSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type pgen(pgenSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type variant_subset(variant_subsetSEXP);
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(SparseTest2(pgen, variant_subset, v));
+    rcpp_result_gen = Rcpp::wrap(SparseTest2(mat, v));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -345,8 +355,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pgenlibr_GetVariantId", (DL_FUNC) &_pgenlibr_GetVariantId, 2},
     {"_pgenlibr_GetAlleleCode", (DL_FUNC) &_pgenlibr_GetAlleleCode, 3},
     {"_pgenlibr_ClosePvar", (DL_FUNC) &_pgenlibr_ClosePvar, 1},
-    {"_pgenlibr_SparseTest", (DL_FUNC) &_pgenlibr_SparseTest, 3},
-    {"_pgenlibr_SparseTest2", (DL_FUNC) &_pgenlibr_SparseTest2, 3},
+    {"_pgenlibr_NewSparse", (DL_FUNC) &_pgenlibr_NewSparse, 2},
+    {"_pgenlibr_SparseTest", (DL_FUNC) &_pgenlibr_SparseTest, 2},
+    {"_pgenlibr_SparseTest2", (DL_FUNC) &_pgenlibr_SparseTest2, 2},
     {NULL, NULL, 0}
 };
 
