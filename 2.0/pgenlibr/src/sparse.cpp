@@ -514,7 +514,7 @@ NumericVector SparseTest(List mat, NumericVector v) {
   }
   XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
   NumericVector result(x->Getncol());
-  x->vtx(&v[0], &result[0]);
+  x->vtx(&v[0], &result[0], 1.0);
   return result;
 }
 
