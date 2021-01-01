@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <math.h>
 
-uint32_t Family::get_no(){
+uint32_t Family::get_no() const {
     return no;
 }
 Family::~Family(){}
@@ -25,7 +25,7 @@ Gaussian::~Gaussian(){
     free(y);
 }
 
-void Gaussian::get_residual(const double * eta, double * r){
+void Gaussian::get_residual(const double * eta, double * r) const {
     for(uint32_t i = 0; i < no; ++i){
         r[i] = y[i] - eta[i];
     }
@@ -53,7 +53,7 @@ Logistic::~Logistic(){
     }
 }
 
-void Logistic::get_residual(const double * eta, double * r){
+void Logistic::get_residual(const double * eta, double * r) const {
     if(offset){
         for(uint32_t i = 0; i < no; ++i){
             r[i] = y[i] - 1/(1 + exp(eta[i] + offset[i]));

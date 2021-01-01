@@ -321,7 +321,7 @@ sparse_snp::~sparse_snp() {
     }
 }
 
-void sparse_snp::vtx(const double *v, double * result, double step){
+void sparse_snp::vtx(const double *v, double * result, double step) const {
     if(!loaded){
         stop("matrix not loaded yet");
     }
@@ -404,7 +404,7 @@ void sparse_snp::vtx(const double *v, double * result, double step){
     }
 }
 
-void sparse_snp::xv(const double *v, double * result){
+void sparse_snp::xv(const double *v, double * result) const {
     if(!loaded){
         stop("matrix not loaded yet");
     }
@@ -488,11 +488,11 @@ void sparse_snp::xv(const double *v, double * result){
 
 }
 
-uint32_t sparse_snp::Getnrow() {
+uint32_t sparse_snp::Getnrow() const {
     return no;
 }
 
-uint32_t sparse_snp::Getncol() {
+uint32_t sparse_snp::Getncol() const {
     return ni;
 }
 

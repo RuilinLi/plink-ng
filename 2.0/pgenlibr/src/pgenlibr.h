@@ -42,11 +42,11 @@ class sparse_snp{
       sparse_snp();
       ~sparse_snp();
       // Compute result = result + step * v^T X
-      void vtx(const double *v, double *result, double step);
+      void vtx(const double *v, double *result, double step) const;
       // Compute result = X v
-      void xv(const double *v, double *result);
-      uint32_t Getnrow();
-      uint32_t Getncol();
+      void xv(const double *v, double *result) const;
+      uint32_t Getnrow() const;
+      uint32_t Getncol() const;
 };
 
 
