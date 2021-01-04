@@ -7,7 +7,8 @@ uint32_t Family::get_no() const {
 }
 Family::~Family(){}
 
-Gaussian::Gaussian(const double *original_y, const double *user_offset) {
+Gaussian::Gaussian(const double *original_y, const double *user_offset, const uint32_t no) {
+    this->no = no;
     y = (double *)malloc(sizeof(double) * no);
     offset = nullptr;
     if (user_offset) {
@@ -31,7 +32,8 @@ void Gaussian::get_residual(const double * eta, double * r) const {
     }
 }
 
-Logistic::Logistic(const double * original_y, const double * user_offset) {
+Logistic::Logistic(const double * original_y, const double * user_offset, const uint32_t no) {
+    this->no = no;
     y = (double *)malloc(sizeof(double) * no);
     for(uint32_t i = 0; i < no; ++i) {
         y[i] = original_y[i];

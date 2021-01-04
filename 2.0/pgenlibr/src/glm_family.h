@@ -21,7 +21,7 @@ class Gaussian : public Family {
     double *y;
 
     public:
-    Gaussian(const double * original_y, const double * user_offset);
+    Gaussian(const double * original_y, const double * user_offset, const uint32_t no);
     ~Gaussian();
 
     void get_residual(const double * eta, double * r) const;
@@ -32,7 +32,7 @@ class Logistic : public Family {
     double *y; // maybe just use int or bool?
 
     public:
-    Logistic(const double * original_y, const double * user_offset);
+    Logistic(const double * original_y, const double * user_offset, const uint32_t no);
     ~Logistic();
     void get_residual(const double * eta, double * r) const;
 

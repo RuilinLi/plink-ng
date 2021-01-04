@@ -50,3 +50,15 @@ void solver(const sparse_snp& X, const Family *y, const double *beta_init)
     free(eta);
 
 }
+
+
+
+// [[Rcpp::export]]
+void SparseTest(List mat, NumericVector y) {
+  if (strcmp_r_c(mat[0], "sparse_snp")) {
+    stop("matrix not the right type");
+  }
+  XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
+  Gaussian response(&y[0], nullptr, x->Getnrow());
+  solver(*x, &response, nullptr);
+}
