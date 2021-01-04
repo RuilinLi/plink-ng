@@ -1,9 +1,13 @@
 #include "optimizer.h"
 
+double ProximalGradient::get_step_size(){
+    return step_size;
+}
+
 ProximalGradient::ProximalGradient(const double *beta_init, const uint32_t ni){
     this->ni = ni;
     beta = (double *)malloc(sizeof(double) * ni);
-    step_size = 1;
+    step_size = 0.00001;
     if(beta_init){
         for(uint32_t i = 0; i < ni; ++i){
             beta[i] = beta_init[i];
@@ -30,8 +34,9 @@ void solver(const sparse_snp& X, const Family *y, const double *beta_init)
     ProximalGradient prox(beta_init, ni);
     double *residual = (double *)malloc(sizeof(double)*no);
     double *eta = (double *)malloc(sizeof(double)*no);
+    double step_size_here = 1.0/(2.0*no);
 
-    for(int t = 0; t < 100; ++t){
+    for(int t = 0; t < 10000; ++t){
         //Compute eta
         X.xv(prox.beta, eta);
 
@@ -39,10 +44,14 @@ void solver(const sparse_snp& X, const Family *y, const double *beta_init)
         y->get_residual(eta, residual);
 
         // gradient descent
-        X.vtx(residual, prox.beta, -prox.get_step_size());
+        X.vtx(residual, prox.beta, step_size_here);
         
         // prox operator, implement later
         prox.prox(1);
+
+        if(t % 100 == 0){
+            Rprintf("Iteration %d, beta[1] is %f\n", t, prox.beta[0]);
+        }
 
     }
 
@@ -54,7 +63,7 @@ void solver(const sparse_snp& X, const Family *y, const double *beta_init)
 
 
 // [[Rcpp::export]]
-void SparseTest(List mat, NumericVector y) {
+void SparseTest123(List mat, NumericVector y) {
   if (strcmp_r_c(mat[0], "sparse_snp")) {
     stop("matrix not the right type");
   }

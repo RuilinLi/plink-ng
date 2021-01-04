@@ -5,6 +5,17 @@
 
 using namespace Rcpp;
 
+// SparseTest123
+void SparseTest123(List mat, NumericVector y);
+RcppExport SEXP _pgenlibr_SparseTest123(SEXP matSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    SparseTest123(mat, y);
+    return R_NilValue;
+END_RCPP
+}
 // getcompactptr
 SEXP getcompactptr(String filename, IntegerVector variant_subset, Nullable<IntegerVector> sample_subset, NumericVector xim, Nullable<List> pvar, Nullable<int> raw_sample_ct);
 RcppExport SEXP _pgenlibr_getcompactptr(SEXP filenameSEXP, SEXP variant_subsetSEXP, SEXP sample_subsetSEXP, SEXP ximSEXP, SEXP pvarSEXP, SEXP raw_sample_ctSEXP) {
@@ -331,6 +342,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_pgenlibr_SparseTest123", (DL_FUNC) &_pgenlibr_SparseTest123, 2},
     {"_pgenlibr_getcompactptr", (DL_FUNC) &_pgenlibr_getcompactptr, 6},
     {"_pgenlibr_getcompactptrfromPgen", (DL_FUNC) &_pgenlibr_getcompactptrfromPgen, 4},
     {"_pgenlibr_NewPgen", (DL_FUNC) &_pgenlibr_NewPgen, 4},

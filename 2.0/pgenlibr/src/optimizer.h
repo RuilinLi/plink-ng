@@ -14,6 +14,7 @@ class ProximalGradient {
    public:
     double* beta;
     ProximalGradient(const double *beta_init, const uint32_t ni);
+    ~ProximalGradient();
     double get_step_size();
     void prox(double lambda);
 };

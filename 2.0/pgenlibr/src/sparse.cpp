@@ -3,8 +3,8 @@
 using namespace std; 
 using namespace std::chrono;
 
-static constexpr int ROW_BLOCK = 8;
-static constexpr int COL_BLOCK = 8;
+static constexpr int ROW_BLOCK = 2;
+static constexpr int COL_BLOCK = 2;
 
 void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uint32_t vsubset_size)
 {
