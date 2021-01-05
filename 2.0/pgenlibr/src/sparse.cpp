@@ -321,10 +321,15 @@ sparse_snp::~sparse_snp() {
     }
 }
 
-void sparse_snp::vtx(const double *v, double * result, double step) const {
+void sparse_snp::vtx(const double *v, double * result) const {
     if(!loaded){
         stop("matrix not loaded yet");
     }
+
+    for(uint32_t i = 0; i < ni; ++i){
+        result[i] = 0;
+    }
+    
     uint32_t local_word_ct = plink2::DivUp(no, plink2::kBitsPerWordD2);
     // Sparse columns
     #pragma omp parallel for
@@ -344,20 +349,20 @@ void sparse_snp::vtx(const double *v, double * result, double step) const {
                     const uint32_t sample_idx_lowbits = plink2::ctzw(geno_word1) / 2;
                     // result_local += cur_weights[sample_idx_lowbits];
                     const CSB_ind local_ind = index[start + widx * plink2::kBitsPerWordD2 + sample_idx_lowbits];
-                    result[local_ind.col] += step * v[local_ind.row];
+                    result[local_ind.col] += v[local_ind.row];
                     geno_word1 &= geno_word1 - 1;
                 }
                 geno_word2 ^= geno_missing_word;
                 while (geno_word2) {
                     const uint32_t sample_idx_lowbits = plink2::ctzw(geno_word2) / 2;
                     const CSB_ind local_ind = index[start + widx * plink2::kBitsPerWordD2 + sample_idx_lowbits];
-                    result[local_ind.col] += 2 * step * v[local_ind.row];
+                    result[local_ind.col] += 2 * v[local_ind.row];
                     geno_word2 &= geno_word2 - 1;
                 }
                 while (geno_missing_word) {
                     const uint32_t sample_idx_lowbits = plink2::ctzw(geno_missing_word) / 2;
                     const CSB_ind local_ind = index[start + widx * plink2::kBitsPerWordD2 + sample_idx_lowbits];
-                    result[local_ind.col] += xim[local_ind.col] * step * v[local_ind.row];
+                    result[local_ind.col] += xim[local_ind.col] * v[local_ind.row];
                     geno_missing_word &= geno_missing_word - 1;
                 }
             }
@@ -399,7 +404,7 @@ void sparse_snp::vtx(const double *v, double * result, double step) const {
                     geno_missing_word &= geno_missing_word - 1;
                 }
             }
-            result[colind] += step * (result_1 + 2 * result_2 + xim[colind] * result_missing);
+            result[colind] = (result_1 + 2 * result_2 + xim[colind] * result_missing);
         }
     }
 }
@@ -514,7 +519,7 @@ NumericVector SparseTest(List mat, NumericVector v) {
   }
   XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
   NumericVector result(x->Getncol());
-  x->vtx(&v[0], &result[0], 1.0);
+  x->vtx(&v[0], &result[0]);
   return result;
 }
 

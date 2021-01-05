@@ -44,7 +44,7 @@ void solver(const sparse_snp& X, const Family *y, const double *beta_init)
         y->get_residual(eta, residual);
 
         // gradient descent
-        X.vtx(residual, prox.beta, step_size_here);
+        //X.vtx(residual, prox.beta, step_size_here);
         
         // prox operator, implement later
         prox.prox(1);
