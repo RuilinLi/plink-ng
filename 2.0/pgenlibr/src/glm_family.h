@@ -8,8 +8,9 @@ class Family {
     double * offset;
     uint32_t no;
     public:
-    // Given the predicted value, compute the residual
-    virtual void get_residual(const double * eta, double * r) const = 0;
+    // Given the predicted value, compute the residual, return the negative log-likelihood 
+    virtual double get_residual(const double * eta, double * r) const = 0;
+    virtual double get_value(const double * eta) const = 0;
     virtual ~Family();
 
     uint32_t get_no() const;
@@ -24,7 +25,8 @@ class Gaussian : public Family {
     Gaussian(const double * original_y, const double * user_offset, const uint32_t no);
     ~Gaussian();
 
-    void get_residual(const double * eta, double * r) const;
+    double get_residual(const double * eta, double * r) const;
+    double get_value(const double * eta) const;
 };
 
 class Logistic : public Family {
@@ -34,7 +36,8 @@ class Logistic : public Family {
     public:
     Logistic(const double * original_y, const double * user_offset, const uint32_t no);
     ~Logistic();
-    void get_residual(const double * eta, double * r) const;
+    double get_residual(const double * eta, double * r) const;
+    double get_value(const double * eta) const;
 
 };
 

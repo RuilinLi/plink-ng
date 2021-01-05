@@ -6,14 +6,15 @@
 using namespace Rcpp;
 
 // SparseTest123
-void SparseTest123(List mat, NumericVector y);
+NumericVector SparseTest123(List mat, NumericVector y);
 RcppExport SEXP _pgenlibr_SparseTest123(SEXP matSEXP, SEXP ySEXP) {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type mat(matSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    SparseTest123(mat, y);
-    return R_NilValue;
+    rcpp_result_gen = Rcpp::wrap(SparseTest123(mat, y));
+    return rcpp_result_gen;
 END_RCPP
 }
 // getcompactptr
