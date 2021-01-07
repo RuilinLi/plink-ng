@@ -11,6 +11,26 @@ typedef struct CSB_ind{
 } CSB_ind;
 
 
+class dense_snp{
+  private:
+    uint32_t no;
+    uint32_t ni;
+    uintptr_t *genovec;
+    double *xim;
+    bool loaded;
+    uint32_t genovec_word_ct;
+
+    friend class RPgenReader;
+
+  public:
+    dense_snp();
+    ~dense_snp();
+    void vtx(const double *v, double *result) const;
+    void xv(const double *v, double *result) const;
+    uint32_t Getnrow() const;
+    uint32_t Getncol() const; 
+};
+
 
 // A compressed sparse block format for sparse genetic matrices
 class sparse_snp{
@@ -97,6 +117,7 @@ public:
   void ReadDiffListOrGenovec(IntegerVector variant_subset);
   void ReadCompactListNoDosage(uintptr_t** Mptr , IntegerVector variant_subset, double *xm);
   void LoadSparse(sparse_snp &x, const int *variant_subset, const uint32_t vsubset_size);
+  void LoadDense(dense_snp &x, IntegerVector variant_subset);
 
   void Close();
 

@@ -5,6 +5,42 @@
 
 using namespace Rcpp;
 
+// NewDense
+SEXP NewDense(List pgen, IntegerVector variant_subset);
+RcppExport SEXP _pgenlibr_NewDense(SEXP pgenSEXP, SEXP variant_subsetSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type pgen(pgenSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type variant_subset(variant_subsetSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewDense(pgen, variant_subset));
+    return rcpp_result_gen;
+END_RCPP
+}
+// DenseTest
+NumericVector DenseTest(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_DenseTest(SEXP matSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
+    rcpp_result_gen = Rcpp::wrap(DenseTest(mat, v));
+    return rcpp_result_gen;
+END_RCPP
+}
+// DenseTest2
+NumericVector DenseTest2(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_DenseTest2(SEXP matSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
+    rcpp_result_gen = Rcpp::wrap(DenseTest2(mat, v));
+    return rcpp_result_gen;
+END_RCPP
+}
 // SparseTest123
 NumericVector SparseTest123(List mat, NumericVector y);
 RcppExport SEXP _pgenlibr_SparseTest123(SEXP matSEXP, SEXP ySEXP) {
@@ -357,6 +393,9 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_pgenlibr_NewDense", (DL_FUNC) &_pgenlibr_NewDense, 2},
+    {"_pgenlibr_DenseTest", (DL_FUNC) &_pgenlibr_DenseTest, 2},
+    {"_pgenlibr_DenseTest2", (DL_FUNC) &_pgenlibr_DenseTest2, 2},
     {"_pgenlibr_SparseTest123", (DL_FUNC) &_pgenlibr_SparseTest123, 2},
     {"_pgenlibr_match_sorted_snp", (DL_FUNC) &_pgenlibr_match_sorted_snp, 4},
     {"_pgenlibr_getcompactptr", (DL_FUNC) &_pgenlibr_getcompactptr, 6},
