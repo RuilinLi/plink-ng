@@ -17,6 +17,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// match_sorted_snp
+IntegerVector match_sorted_snp(IntegerVector chr, IntegerVector pos, IntegerVector refpos, IntegerVector refcumu);
+RcppExport SEXP _pgenlibr_match_sorted_snp(SEXP chrSEXP, SEXP posSEXP, SEXP refposSEXP, SEXP refcumuSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type chr(chrSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type pos(posSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type refpos(refposSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type refcumu(refcumuSEXP);
+    rcpp_result_gen = Rcpp::wrap(match_sorted_snp(chr, pos, refpos, refcumu));
+    return rcpp_result_gen;
+END_RCPP
+}
 // getcompactptr
 SEXP getcompactptr(String filename, IntegerVector variant_subset, Nullable<IntegerVector> sample_subset, NumericVector xim, Nullable<List> pvar, Nullable<int> raw_sample_ct);
 RcppExport SEXP _pgenlibr_getcompactptr(SEXP filenameSEXP, SEXP variant_subsetSEXP, SEXP sample_subsetSEXP, SEXP ximSEXP, SEXP pvarSEXP, SEXP raw_sample_ctSEXP) {
@@ -344,6 +358,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_pgenlibr_SparseTest123", (DL_FUNC) &_pgenlibr_SparseTest123, 2},
+    {"_pgenlibr_match_sorted_snp", (DL_FUNC) &_pgenlibr_match_sorted_snp, 4},
     {"_pgenlibr_getcompactptr", (DL_FUNC) &_pgenlibr_getcompactptr, 6},
     {"_pgenlibr_getcompactptrfromPgen", (DL_FUNC) &_pgenlibr_getcompactptrfromPgen, 4},
     {"_pgenlibr_NewPgen", (DL_FUNC) &_pgenlibr_NewPgen, 4},

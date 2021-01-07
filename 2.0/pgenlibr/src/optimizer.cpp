@@ -134,3 +134,30 @@ NumericVector SparseTest123(List mat, NumericVector y) {
   solver(*x, &response, nullptr, &result[0]);
   return result;
 }
+
+// A utility function, might as well put here
+// [[Rcpp::export]]
+IntegerVector match_sorted_snp(IntegerVector chr, IntegerVector pos, IntegerVector refpos, IntegerVector refcumu) {
+  uint32_t n = chr.size();
+  IntegerVector result(n);
+  for(uint32_t i = 0; i < n; ++i) {
+      uint32_t current_chr = chr[i];
+      uint32_t current_pos = pos[i];
+      uint32_t start = refcumu[current_chr - 1];
+      uint32_t end = refcumu[current_chr];
+      // Binary search to find the index
+      uint32_t max_iter = ceil(log2((double)(end - start + 1)));
+      for(uint32_t j = 0; j < max_iter; ++j){
+          uint32_t ind = (start + end)/2;
+          if(refpos[ind] > current_pos){
+              end = ind;
+          } else if (refpos[ind] < current_pos) {
+              start = ind;
+          } else {
+              result[i] = ind + 1;
+              break;
+          }
+      }
+  }
+  return result;
+}

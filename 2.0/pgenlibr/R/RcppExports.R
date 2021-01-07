@@ -5,6 +5,10 @@ SparseTest123 <- function(mat, y) {
     .Call(`_pgenlibr_SparseTest123`, mat, y)
 }
 
+match_sorted_snp <- function(chr, pos, refpos, refcumu) {
+    .Call(`_pgenlibr_match_sorted_snp`, chr, pos, refpos, refcumu)
+}
+
 getcompactptr <- function(filename, variant_subset, sample_subset, xim, pvar = NULL, raw_sample_ct = NULL) {
     .Call(`_pgenlibr_getcompactptr`, filename, variant_subset, sample_subset, xim, pvar, raw_sample_ct)
 }
