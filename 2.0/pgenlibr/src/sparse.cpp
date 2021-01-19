@@ -3,8 +3,8 @@
 using namespace std; 
 using namespace std::chrono;
 
-static constexpr int ROW_BLOCK = 2;
-static constexpr int COL_BLOCK = 2;
+static constexpr int ROW_BLOCK = 8;
+static constexpr int COL_BLOCK = 16;
 
 void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uint32_t vsubset_size)
 {
@@ -67,9 +67,10 @@ void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uin
 
         // It's possible, though unlikely, that in a subset the difflist_common_geno is 1 or 2.
         // This case is currently not handled
-        // if(difflist_common_geno != 0){
-        //     stop("The common geno for sparse columns must be 0\n");
-        // }
+        if(difflist_common_geno != 0){
+            Rprintf("difflist common geno is %d\n", difflist_common_geno);
+            stop("The common geno for sparse columns must be 0\n");
+        }
 
 
         plink2::ZeroTrailingNyps(difflist_len, main_raregeno);
@@ -518,6 +519,9 @@ NumericVector SparseTest(List mat, NumericVector v) {
     stop("matrix not the right type");
   }
   XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
+  if(v.size() != x->Getnrow()){
+      stop("vector length incompatible with the matrix.");
+  }
   NumericVector result(x->Getncol());
   x->vtx(&v[0], &result[0]);
   return result;
@@ -529,6 +533,9 @@ NumericVector SparseTest2(List mat, NumericVector v) {
     stop("matrix not the right type");
   }
   XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
+  if(v.size() != x->Getncol()){
+      stop("vector length incompatible with the matrix.");
+  }
   NumericVector result(x->Getnrow());
   x->xv(&v[0], &result[0]);
   return result;
