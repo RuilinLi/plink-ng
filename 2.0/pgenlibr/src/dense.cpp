@@ -48,7 +48,7 @@ void dense_snp::vtx(const double *v, double *result) const{
     uint32_t local_word_ct = plink2::DivUp(no, plink2::kBitsPerWordD2);
     #pragma omp parallel for num_threads(NTHREAD)
     for(uint32_t densecol_ind = 0; densecol_ind < ni; ++densecol_ind){
-        const uintptr_t* col = &(genovec[densecol_ind * genovec_word_ct]);
+        const uintptr_t* col = &(genovec[((uintptr_t)densecol_ind) * genovec_word_ct]);
         double result_1 = 0;
         double result_2 = 0;
         double result_missing = 0;
@@ -92,9 +92,9 @@ void dense_snp::xv(const double *v, double *result) const {
 
 #pragma omp parallel num_threads(NTHREAD)
     {
-        int total_threads = omp_get_num_threads();
-        int threadid = omp_get_thread_num();
-        int size = (word_ct_local + total_threads * 8 - 1) / (total_threads * 8);
+        uint32_t total_threads = omp_get_num_threads();
+        uint32_t threadid = omp_get_thread_num();
+        uint32_t size = (word_ct_local + total_threads * 8 - 1) / (total_threads * 8);
         size *= 8;
         uint32_t start = threadid * size;
         uint32_t end = (1 + threadid) * size;
@@ -102,9 +102,9 @@ void dense_snp::xv(const double *v, double *result) const {
         {
             end = word_ct_local;
         }
-        for (int j = 0; j < ni; ++j)
+        for (uint32_t j = 0; j < ni; ++j)
         {
-            const uintptr_t *genoarr = &(genovec[j * genovec_word_ct]);
+            const uintptr_t *genoarr = &(genovec[((uintptr_t)j) * genovec_word_ct]);
             // it's easy to forget that xim should be extended when
             // we add covariates to it
             double ximpute = xim[j];
