@@ -380,7 +380,7 @@ void sparse_snp::vtx(const double *v, double * result) const {
         }
         for(uint32_t densecol_ind = start; densecol_ind < end; ++densecol_ind){
             uint32_t colind = dense_ind[densecol_ind];
-            const uintptr_t* col = &(genovec[densecol_ind * genovec_word_ct]);
+            const uintptr_t* col = &(genovec[((uintptr_t)densecol_ind) * genovec_word_ct]);
             double result_1 = 0;
             double result_2 = 0;
             double result_missing = 0;
@@ -469,7 +469,7 @@ void sparse_snp::xv(const double *v, double * result) const {
         }
         for (uint32_t densecol_ind = 0; densecol_ind < ndense; ++densecol_ind){
             uint32_t colind = dense_ind[densecol_ind];
-            const uintptr_t* col = &(genovec[densecol_ind * genovec_word_ct]);
+            const uintptr_t* col = &(genovec[((uintptr_t)densecol_ind) * genovec_word_ct]);
             const double weight = v[colind];
             const double imputed_mean = xim[colind];
             for (uint32_t widx = start; widx < end; ++widx) {
