@@ -1,6 +1,8 @@
 #include "pgenlibr.h"
 #include "omp.h"
 
+#define NTHREAD 16
+
 void RPgenReader::LoadDense(dense_snp &x, IntegerVector variant_subset) {
     if (!_info_ptr)
     {
@@ -44,7 +46,7 @@ void dense_snp::vtx(const double *v, double *result) const{
         stop("matrix not loaded yet");
     }
     uint32_t local_word_ct = plink2::DivUp(no, plink2::kBitsPerWordD2);
-    #pragma omp parallel for num_threads(16)
+    #pragma omp parallel for num_threads(NTHREAD)
     for(uint32_t densecol_ind = 0; densecol_ind < ni; ++densecol_ind){
         const uintptr_t* col = &(genovec[densecol_ind * genovec_word_ct]);
         double result_1 = 0;
@@ -88,7 +90,7 @@ void dense_snp::xv(const double *v, double *result) const {
     }
     const uint32_t word_ct_local = plink2::DivUp(no, plink2::kBitsPerWordD2);
 
-#pragma omp parallel num_threads(16)
+#pragma omp parallel num_threads(NTHREAD)
     {
         int total_threads = omp_get_num_threads();
         int threadid = omp_get_thread_num();

@@ -3,7 +3,7 @@
 using namespace std; 
 using namespace std::chrono;
 
-static constexpr int ROW_BLOCK = 8;
+static constexpr int ROW_BLOCK = 16;
 static constexpr int COL_BLOCK = 16;
 
 void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uint32_t vsubset_size)
@@ -369,6 +369,9 @@ void sparse_snp::vtx(const double *v, double * result) const {
             }
 
         }
+    }
+    #pragma omp parallel for
+    for(uint32_t colblock_ind = 0; colblock_ind < colblock; ++colblock_ind){
         uint32_t len = ndense/colblock;
         uint32_t start = len * colblock_ind;
         uint32_t end = len * (colblock_ind + 1);
@@ -453,6 +456,10 @@ void sparse_snp::xv(const double *v, double * result) const {
             }
 
         }
+    }
+
+    #pragma omp parallel for
+    for(uint32_t rowblock_ind = 0; rowblock_ind < rowblock; ++rowblock_ind){
         // put dense genovecs here
         uint32_t len = local_word_ct/rowblock;
         uint32_t start = len * rowblock_ind;
