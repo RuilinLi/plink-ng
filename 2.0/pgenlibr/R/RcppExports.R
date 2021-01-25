@@ -5,12 +5,12 @@ NewDense <- function(pgen, variant_subset) {
     .Call(`_pgenlibr_NewDense`, pgen, variant_subset)
 }
 
-DenseTest <- function(mat, v) {
-    .Call(`_pgenlibr_DenseTest`, mat, v)
+DenseTransMultv <- function(mat, v) {
+    .Call(`_pgenlibr_DenseTransMultv`, mat, v)
 }
 
-DenseTest2 <- function(mat, v) {
-    .Call(`_pgenlibr_DenseTest2`, mat, v)
+DenseMultv <- function(mat, v) {
+    .Call(`_pgenlibr_DenseMultv`, mat, v)
 }
 
 SparseTest123 <- function(mat, y) {
@@ -121,11 +121,11 @@ NewSparse <- function(pgen, variant_subset) {
     .Call(`_pgenlibr_NewSparse`, pgen, variant_subset)
 }
 
-SparseTest <- function(mat, v) {
-    .Call(`_pgenlibr_SparseTest`, mat, v)
+TransMultv <- function(mat, v) {
+    .Call(`_pgenlibr_TransMultv`, mat, v)
 }
 
-SparseTest2 <- function(mat, v) {
-    .Call(`_pgenlibr_SparseTest2`, mat, v)
+Multv <- function(mat, v) {
+    .Call(`_pgenlibr_Multv`, mat, v)
 }
 

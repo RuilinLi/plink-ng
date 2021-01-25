@@ -17,27 +17,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// DenseTest
-NumericVector DenseTest(List mat, NumericVector v);
-RcppExport SEXP _pgenlibr_DenseTest(SEXP matSEXP, SEXP vSEXP) {
+// DenseTransMultv
+NumericVector DenseTransMultv(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_DenseTransMultv(SEXP matSEXP, SEXP vSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type mat(matSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(DenseTest(mat, v));
+    rcpp_result_gen = Rcpp::wrap(DenseTransMultv(mat, v));
     return rcpp_result_gen;
 END_RCPP
 }
-// DenseTest2
-NumericVector DenseTest2(List mat, NumericVector v);
-RcppExport SEXP _pgenlibr_DenseTest2(SEXP matSEXP, SEXP vSEXP) {
+// DenseMultv
+NumericVector DenseMultv(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_DenseMultv(SEXP matSEXP, SEXP vSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type mat(matSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(DenseTest2(mat, v));
+    rcpp_result_gen = Rcpp::wrap(DenseMultv(mat, v));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -367,35 +367,35 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// SparseTest
-NumericVector SparseTest(List mat, NumericVector v);
-RcppExport SEXP _pgenlibr_SparseTest(SEXP matSEXP, SEXP vSEXP) {
+// TransMultv
+NumericVector TransMultv(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_TransMultv(SEXP matSEXP, SEXP vSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type mat(matSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(SparseTest(mat, v));
+    rcpp_result_gen = Rcpp::wrap(TransMultv(mat, v));
     return rcpp_result_gen;
 END_RCPP
 }
-// SparseTest2
-NumericVector SparseTest2(List mat, NumericVector v);
-RcppExport SEXP _pgenlibr_SparseTest2(SEXP matSEXP, SEXP vSEXP) {
+// Multv
+NumericVector Multv(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_Multv(SEXP matSEXP, SEXP vSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type mat(matSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(SparseTest2(mat, v));
+    rcpp_result_gen = Rcpp::wrap(Multv(mat, v));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_pgenlibr_NewDense", (DL_FUNC) &_pgenlibr_NewDense, 2},
-    {"_pgenlibr_DenseTest", (DL_FUNC) &_pgenlibr_DenseTest, 2},
-    {"_pgenlibr_DenseTest2", (DL_FUNC) &_pgenlibr_DenseTest2, 2},
+    {"_pgenlibr_DenseTransMultv", (DL_FUNC) &_pgenlibr_DenseTransMultv, 2},
+    {"_pgenlibr_DenseMultv", (DL_FUNC) &_pgenlibr_DenseMultv, 2},
     {"_pgenlibr_SparseTest123", (DL_FUNC) &_pgenlibr_SparseTest123, 2},
     {"_pgenlibr_match_sorted_snp", (DL_FUNC) &_pgenlibr_match_sorted_snp, 4},
     {"_pgenlibr_getcompactptr", (DL_FUNC) &_pgenlibr_getcompactptr, 6},
@@ -423,8 +423,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pgenlibr_GetAlleleCode", (DL_FUNC) &_pgenlibr_GetAlleleCode, 3},
     {"_pgenlibr_ClosePvar", (DL_FUNC) &_pgenlibr_ClosePvar, 1},
     {"_pgenlibr_NewSparse", (DL_FUNC) &_pgenlibr_NewSparse, 2},
-    {"_pgenlibr_SparseTest", (DL_FUNC) &_pgenlibr_SparseTest, 2},
-    {"_pgenlibr_SparseTest2", (DL_FUNC) &_pgenlibr_SparseTest2, 2},
+    {"_pgenlibr_TransMultv", (DL_FUNC) &_pgenlibr_TransMultv, 2},
+    {"_pgenlibr_Multv", (DL_FUNC) &_pgenlibr_Multv, 2},
     {NULL, NULL, 0}
 };
 

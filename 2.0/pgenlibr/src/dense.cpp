@@ -161,7 +161,7 @@ SEXP NewDense(List pgen, IntegerVector variant_subset) {
 
 
 // [[Rcpp::export]]
-NumericVector DenseTest(List mat, NumericVector v) {
+NumericVector DenseTransMultv(List mat, NumericVector v) {
   if (strcmp_r_c(mat[0], "dense_snp")) {
     stop("matrix not the right type");
   }
@@ -176,7 +176,7 @@ NumericVector DenseTest(List mat, NumericVector v) {
 }
 
 // [[Rcpp::export]]
-NumericVector DenseTest2(List mat, NumericVector v) {
+NumericVector DenseMultv(List mat, NumericVector v) {
   if (strcmp_r_c(mat[0], "dense_snp")) {
     stop("matrix not the right type");
   }

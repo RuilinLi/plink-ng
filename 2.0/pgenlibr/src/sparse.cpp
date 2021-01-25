@@ -521,7 +521,7 @@ SEXP NewSparse(List pgen, IntegerVector variant_subset) {
 }
 
 // [[Rcpp::export]]
-NumericVector SparseTest(List mat, NumericVector v) {
+NumericVector TransMultv(List mat, NumericVector v) {
   if (strcmp_r_c(mat[0], "sparse_snp")) {
     stop("matrix not the right type");
   }
@@ -535,7 +535,7 @@ NumericVector SparseTest(List mat, NumericVector v) {
 }
 
 // [[Rcpp::export]]
-NumericVector SparseTest2(List mat, NumericVector v) {
+NumericVector Multv(List mat, NumericVector v) {
   if (strcmp_r_c(mat[0], "sparse_snp")) {
     stop("matrix not the right type");
   }
