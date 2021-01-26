@@ -28,7 +28,8 @@ class dense_snp{
     void vtx(const double *v, double *result) const;
     void xv(const double *v, double *result) const;
     uint32_t Getnrow() const;
-    uint32_t Getncol() const; 
+    uint32_t Getncol() const;
+    void ResetMeanImputation(const NumericVector meanimp);
 };
 
 

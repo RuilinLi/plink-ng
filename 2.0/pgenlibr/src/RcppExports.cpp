@@ -6,14 +6,15 @@
 using namespace Rcpp;
 
 // NewDense
-SEXP NewDense(List pgen, IntegerVector variant_subset);
-RcppExport SEXP _pgenlibr_NewDense(SEXP pgenSEXP, SEXP variant_subsetSEXP) {
+SEXP NewDense(List pgen, IntegerVector variant_subset, Nullable<NumericVector> meanimp);
+RcppExport SEXP _pgenlibr_NewDense(SEXP pgenSEXP, SEXP variant_subsetSEXP, SEXP meanimpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type pgen(pgenSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type variant_subset(variant_subsetSEXP);
-    rcpp_result_gen = Rcpp::wrap(NewDense(pgen, variant_subset));
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type meanimp(meanimpSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewDense(pgen, variant_subset, meanimp));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -42,15 +43,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // SparseTest123
-NumericVector SparseTest123(List mat, NumericVector y, IntegerVector group);
-RcppExport SEXP _pgenlibr_SparseTest123(SEXP matSEXP, SEXP ySEXP, SEXP groupSEXP) {
+NumericMatrix SparseTest123(List mat, NumericVector y, IntegerVector group, NumericVector lambda_seq);
+RcppExport SEXP _pgenlibr_SparseTest123(SEXP matSEXP, SEXP ySEXP, SEXP groupSEXP, SEXP lambda_seqSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type mat(matSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type group(groupSEXP);
-    rcpp_result_gen = Rcpp::wrap(SparseTest123(mat, y, group));
+    Rcpp::traits::input_parameter< NumericVector >::type lambda_seq(lambda_seqSEXP);
+    rcpp_result_gen = Rcpp::wrap(SparseTest123(mat, y, group, lambda_seq));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -408,10 +410,10 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_pgenlibr_NewDense", (DL_FUNC) &_pgenlibr_NewDense, 2},
+    {"_pgenlibr_NewDense", (DL_FUNC) &_pgenlibr_NewDense, 3},
     {"_pgenlibr_DenseTransMultv", (DL_FUNC) &_pgenlibr_DenseTransMultv, 2},
     {"_pgenlibr_DenseMultv", (DL_FUNC) &_pgenlibr_DenseMultv, 2},
-    {"_pgenlibr_SparseTest123", (DL_FUNC) &_pgenlibr_SparseTest123, 3},
+    {"_pgenlibr_SparseTest123", (DL_FUNC) &_pgenlibr_SparseTest123, 4},
     {"_pgenlibr_ComputeLambdaMax", (DL_FUNC) &_pgenlibr_ComputeLambdaMax, 4},
     {"_pgenlibr_match_sorted_snp", (DL_FUNC) &_pgenlibr_match_sorted_snp, 4},
     {"_pgenlibr_getcompactptr", (DL_FUNC) &_pgenlibr_getcompactptr, 6},

@@ -22,6 +22,8 @@ void RPgenReader::LoadDense(dense_snp &x, IntegerVector variant_subset) {
 }
 
 dense_snp::dense_snp(){
+    no = 0;
+    ni = 0;
     loaded = false;
 }
 
@@ -39,6 +41,15 @@ uint32_t dense_snp::Getnrow() const {
     
 uint32_t dense_snp::Getncol() const {
     return ni;
+}
+
+void dense_snp::ResetMeanImputation(const NumericVector meanimp) {
+    if(ni != meanimp.size()){
+        stop("mean imputation does not have the right size");
+    }
+    for(uint32_t i = 0 ; i < ni; ++i){
+        this->xim[i] = meanimp[i];
+    }
 }
 
 void dense_snp::vtx(const double *v, double *result) const{
@@ -149,13 +160,17 @@ void dense_snp::xv(const double *v, double *result) const {
 
 
 // [[Rcpp::export]]
-SEXP NewDense(List pgen, IntegerVector variant_subset) {
+SEXP NewDense(List pgen, IntegerVector variant_subset, Nullable<NumericVector> meanimp) {
    if (strcmp_r_c(pgen[0], "pgen")) {
     stop("pgen is not a pgen object");
   }
   XPtr<class RPgenReader> rp = as<XPtr<class RPgenReader> >(pgen[1]);
   XPtr<class dense_snp> xp(new dense_snp(), true);
   rp->LoadDense(*xp, variant_subset);
+  if(meanimp.isNotNull()){
+      NumericVector newmean = as<NumericVector>(meanimp);
+      xp->ResetMeanImputation(newmean);
+  }
   return List::create(_["class"] = "dense_snp", _["dense_snp"] = xp);
 }
 

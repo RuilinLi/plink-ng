@@ -29,6 +29,7 @@ class ProximalGradient {
     // returns <grad, beta_next - beta> + \|beta_next - beta\|_2^2/(2*step_size)
     double quadratic_diff();
     void nesterov_update();
+    void reset_nesterov_weight();
 };
 
 void solver(const sparse_snp &X, const Family *y, const double *beta_init);
