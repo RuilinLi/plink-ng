@@ -103,7 +103,7 @@ void solver(const sparse_snp& X, const Family *y, ProximalGradient& prox, double
         while(true){
             // Maybe try increasing step size occasionally?
             // merge gradient descent and prox together
-            prox.prox(0.1);
+            prox.prox(0.008);
 
             // compute the value at the proposed parameters prox.beta_next
             X.xv(prox.beta_next, eta);

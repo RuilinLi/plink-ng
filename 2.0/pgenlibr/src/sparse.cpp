@@ -95,10 +95,10 @@ void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uin
         }
     }
 
-    for(int i = 0; i < x.rowblock * x.colblock + 1; ++i){
-        std::cout << x.blk_ptr[i] << std::endl;
-    }
-    std::cout << "total genovec is " << total_genovec << std::endl;
+    // for(int i = 0; i < x.rowblock * x.colblock + 1; ++i){
+    //     std::cout << x.blk_ptr[i] << std::endl;
+    // }
+    // std::cout << "total genovec is " << total_genovec << std::endl;
     x.dense_ind = (uint32_t*)malloc(sizeof(uint32_t) * total_genovec);
     x.ndense = total_genovec;
     // we want each column of genovec to be cacheline aligned
@@ -123,12 +123,12 @@ void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uin
         x.blk_ptr[i] = current_size_with_padding + x.blk_ptr[i - 1];
     }
 
-    for(uint32_t i = 0; i <  x.rowblock * x.colblock + 1; ++i){
-        std::cout << x.blk_ptr[i] << std::endl;
-    }
+    // for(uint32_t i = 0; i <  x.rowblock * x.colblock + 1; ++i){
+    //     std::cout << x.blk_ptr[i] << std::endl;
+    // }
     uint64_t total_nnz = x.blk_ptr[x.rowblock * x.colblock];
-    std::cout << "max_block_size " << max_block_size << std::endl;
-    std::cout << "total nnz is " << total_nnz << std::endl;
+    // std::cout << "max_block_size " << max_block_size << std::endl;
+    // std::cout << "total nnz is " << total_nnz << std::endl;
 
     // Now malloc the difflist vec, indices
     if (plink2::cachealigned_malloc(
@@ -272,7 +272,7 @@ void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uin
         for (uint32_t i = 0; i < x.rowblock; ++i) {
             uint64_t nnz_start = x.blk_ptr[j * x.rowblock + i]  + row_block_nnz_count[i];
             uint64_t nnz_end =  x.blk_ptr[j * x.rowblock + i + 1];
-            std::cout << "start " << nnz_start << " end " << nnz_end << std::endl;
+            //std::cout << "start " << nnz_start << " end " << nnz_end << std::endl;
             for(uint64_t pad_ind = nnz_start; pad_ind < nnz_end; pad_ind++){
                 x.index[pad_ind] = x.index[nnz_start - 1];
             }
