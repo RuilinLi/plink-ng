@@ -42,14 +42,29 @@ BEGIN_RCPP
 END_RCPP
 }
 // SparseTest123
-NumericVector SparseTest123(List mat, NumericVector y);
-RcppExport SEXP _pgenlibr_SparseTest123(SEXP matSEXP, SEXP ySEXP) {
+NumericVector SparseTest123(List mat, NumericVector y, IntegerVector group);
+RcppExport SEXP _pgenlibr_SparseTest123(SEXP matSEXP, SEXP ySEXP, SEXP groupSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type mat(matSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    rcpp_result_gen = Rcpp::wrap(SparseTest123(mat, y));
+    Rcpp::traits::input_parameter< IntegerVector >::type group(groupSEXP);
+    rcpp_result_gen = Rcpp::wrap(SparseTest123(mat, y, group));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ComputeLambdaMax
+NumericVector ComputeLambdaMax(List mat, NumericVector y, IntegerVector group, NumericVector offset);
+RcppExport SEXP _pgenlibr_ComputeLambdaMax(SEXP matSEXP, SEXP ySEXP, SEXP groupSEXP, SEXP offsetSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type group(groupSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type offset(offsetSEXP);
+    rcpp_result_gen = Rcpp::wrap(ComputeLambdaMax(mat, y, group, offset));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -396,7 +411,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pgenlibr_NewDense", (DL_FUNC) &_pgenlibr_NewDense, 2},
     {"_pgenlibr_DenseTransMultv", (DL_FUNC) &_pgenlibr_DenseTransMultv, 2},
     {"_pgenlibr_DenseMultv", (DL_FUNC) &_pgenlibr_DenseMultv, 2},
-    {"_pgenlibr_SparseTest123", (DL_FUNC) &_pgenlibr_SparseTest123, 2},
+    {"_pgenlibr_SparseTest123", (DL_FUNC) &_pgenlibr_SparseTest123, 3},
+    {"_pgenlibr_ComputeLambdaMax", (DL_FUNC) &_pgenlibr_ComputeLambdaMax, 4},
     {"_pgenlibr_match_sorted_snp", (DL_FUNC) &_pgenlibr_match_sorted_snp, 4},
     {"_pgenlibr_getcompactptr", (DL_FUNC) &_pgenlibr_getcompactptr, 6},
     {"_pgenlibr_getcompactptrfromPgen", (DL_FUNC) &_pgenlibr_getcompactptrfromPgen, 4},

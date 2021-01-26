@@ -13,8 +13,12 @@ DenseMultv <- function(mat, v) {
     .Call(`_pgenlibr_DenseMultv`, mat, v)
 }
 
-SparseTest123 <- function(mat, y) {
-    .Call(`_pgenlibr_SparseTest123`, mat, y)
+SparseTest123 <- function(mat, y, group) {
+    .Call(`_pgenlibr_SparseTest123`, mat, y, group)
+}
+
+ComputeLambdaMax <- function(mat, y, group, offset) {
+    .Call(`_pgenlibr_ComputeLambdaMax`, mat, y, group, offset)
 }
 
 match_sorted_snp <- function(chr, pos, refpos, refcumu) {

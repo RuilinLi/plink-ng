@@ -4,13 +4,16 @@
 #include "glm_family.h"
 #include "pgenlibr.h"
 
-
+// This should really be called
+// a proximal gradient method for group lasso
 class ProximalGradient {
    private:
     // number of variables
     uint32_t ni;
     double weight_old;
     double weight_new;
+    const int * group_cumu;
+    const uint32_t ngroup;
 
    public:
     double* beta;
@@ -18,11 +21,11 @@ class ProximalGradient {
     double* beta_next;
     double* beta_prev;
     double step_size;
-    ProximalGradient(const double *beta_init, const uint32_t ni);
+    ProximalGradient(const double *beta_init, const uint32_t ni, const IntegerVector group);
     ~ProximalGradient();
     double get_step_size();
     // beta_next = prox(beta - step_size * grad)
-    void prox(double step_size, double lambda);
+    void prox(double lambda);
     // returns <grad, beta_next - beta> + \|beta_next - beta\|_2^2/(2*step_size)
     double quadratic_diff();
     void nesterov_update();
