@@ -408,6 +408,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// GetSparseMeanImputation
+NumericVector GetSparseMeanImputation(List mat);
+RcppExport SEXP _pgenlibr_GetSparseMeanImputation(SEXP matSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetSparseMeanImputation(mat));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_pgenlibr_NewDense", (DL_FUNC) &_pgenlibr_NewDense, 3},
@@ -443,6 +454,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pgenlibr_NewSparse", (DL_FUNC) &_pgenlibr_NewSparse, 2},
     {"_pgenlibr_TransMultv", (DL_FUNC) &_pgenlibr_TransMultv, 2},
     {"_pgenlibr_Multv", (DL_FUNC) &_pgenlibr_Multv, 2},
+    {"_pgenlibr_GetSparseMeanImputation", (DL_FUNC) &_pgenlibr_GetSparseMeanImputation, 1},
     {NULL, NULL, 0}
 };
 

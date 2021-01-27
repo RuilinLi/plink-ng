@@ -133,3 +133,7 @@ Multv <- function(mat, v) {
     .Call(`_pgenlibr_Multv`, mat, v)
 }
 
+GetSparseMeanImputation <- function(mat) {
+    .Call(`_pgenlibr_GetSparseMeanImputation`, mat)
+}
+

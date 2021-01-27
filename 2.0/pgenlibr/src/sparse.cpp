@@ -308,6 +308,8 @@ sparse_snp::sparse_snp()
     colblock = COL_BLOCK; // testing only must be greater than the number of columns
     genovec_word_ct = 0;
     ndense = 0;
+    ni = 0;
+    no = 0;
 }
 
 sparse_snp::~sparse_snp() {
@@ -509,6 +511,12 @@ uint32_t sparse_snp::Getncol() const {
     return ni;
 }
 
+void sparse_snp::CopyMeanImputation(double *dest) const {
+    for(uint32_t i = 0; i < ni; ++i){
+        dest[i] = this->xim[i];
+    }
+}
+
 // [[Rcpp::export]]
 SEXP NewSparse(List pgen, IntegerVector variant_subset) {
    if (strcmp_r_c(pgen[0], "pgen")) {
@@ -545,5 +553,17 @@ NumericVector Multv(List mat, NumericVector v) {
   }
   NumericVector result(x->Getnrow());
   x->xv(&v[0], &result[0]);
+  return result;
+}
+
+// [[Rcpp::export]]
+NumericVector GetSparseMeanImputation(List mat) {
+  if (strcmp_r_c(mat[0], "sparse_snp")) {
+    stop("matrix not the right type");
+  }
+  XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
+  NumericVector result(x->Getncol());
+  x->CopyMeanImputation(&result[0]);
+
   return result;
 }

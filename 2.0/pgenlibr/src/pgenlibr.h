@@ -68,6 +68,7 @@ class sparse_snp{
       void xv(const double *v, double *result) const;
       uint32_t Getnrow() const;
       uint32_t Getncol() const;
+      void CopyMeanImputation(double *dest) const;
 };
 
 
