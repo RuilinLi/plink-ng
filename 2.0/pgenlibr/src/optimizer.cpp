@@ -163,6 +163,9 @@ NumericMatrix SparseTest123(List mat, NumericVector y, IntegerVector group, Nume
     stop("matrix not the right type");
   }
   XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
+  if(x->Getnrow() != y.size()){
+    stop("The row number of the matrix does not match the length of y");
+  }
   NumericMatrix result(x->Getncol(), lambda_seq.size());
   Gaussian response(&y[0], nullptr, x->Getnrow());
   ProximalGradient prox(nullptr, x->Getncol(), group);
