@@ -56,17 +56,56 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// ComputeLambdaMax
-NumericVector ComputeLambdaMax(List mat, NumericVector y, IntegerVector group, NumericVector offset);
-RcppExport SEXP _pgenlibr_ComputeLambdaMax(SEXP matSEXP, SEXP ySEXP, SEXP groupSEXP, SEXP offsetSEXP) {
+// NewResponseObj
+SEXP NewResponseObj(NumericVector y, String family, Nullable<NumericVector> status, Nullable<NumericVector> offset);
+RcppExport SEXP _pgenlibr_NewResponseObj(SEXP ySEXP, SEXP familySEXP, SEXP statusSEXP, SEXP offsetSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< String >::type family(familySEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type status(statusSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type offset(offsetSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewResponseObj(y, family, status, offset));
+    return rcpp_result_gen;
+END_RCPP
+}
+// NewProxObj
+SEXP NewProxObj(int ni, IntegerVector group);
+RcppExport SEXP _pgenlibr_NewProxObj(SEXP niSEXP, SEXP groupSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type ni(niSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type group(groupSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewProxObj(ni, group));
+    return rcpp_result_gen;
+END_RCPP
+}
+// FitGroupLasso
+NumericMatrix FitGroupLasso(List mat, List prox, List response, NumericVector lambda_seq);
+RcppExport SEXP _pgenlibr_FitGroupLasso(SEXP matSEXP, SEXP proxSEXP, SEXP responseSEXP, SEXP lambda_seqSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type mat(matSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< List >::type prox(proxSEXP);
+    Rcpp::traits::input_parameter< List >::type response(responseSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type lambda_seq(lambda_seqSEXP);
+    rcpp_result_gen = Rcpp::wrap(FitGroupLasso(mat, prox, response, lambda_seq));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ComputeLambdaMax
+double ComputeLambdaMax(List mat, List response, IntegerVector group);
+RcppExport SEXP _pgenlibr_ComputeLambdaMax(SEXP matSEXP, SEXP responseSEXP, SEXP groupSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< List >::type response(responseSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type group(groupSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type offset(offsetSEXP);
-    rcpp_result_gen = Rcpp::wrap(ComputeLambdaMax(mat, y, group, offset));
+    rcpp_result_gen = Rcpp::wrap(ComputeLambdaMax(mat, response, group));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -425,7 +464,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pgenlibr_DenseTransMultv", (DL_FUNC) &_pgenlibr_DenseTransMultv, 2},
     {"_pgenlibr_DenseMultv", (DL_FUNC) &_pgenlibr_DenseMultv, 2},
     {"_pgenlibr_SparseTest123", (DL_FUNC) &_pgenlibr_SparseTest123, 4},
-    {"_pgenlibr_ComputeLambdaMax", (DL_FUNC) &_pgenlibr_ComputeLambdaMax, 4},
+    {"_pgenlibr_NewResponseObj", (DL_FUNC) &_pgenlibr_NewResponseObj, 4},
+    {"_pgenlibr_NewProxObj", (DL_FUNC) &_pgenlibr_NewProxObj, 2},
+    {"_pgenlibr_FitGroupLasso", (DL_FUNC) &_pgenlibr_FitGroupLasso, 4},
+    {"_pgenlibr_ComputeLambdaMax", (DL_FUNC) &_pgenlibr_ComputeLambdaMax, 3},
     {"_pgenlibr_match_sorted_snp", (DL_FUNC) &_pgenlibr_match_sorted_snp, 4},
     {"_pgenlibr_getcompactptr", (DL_FUNC) &_pgenlibr_getcompactptr, 6},
     {"_pgenlibr_getcompactptrfromPgen", (DL_FUNC) &_pgenlibr_getcompactptrfromPgen, 4},

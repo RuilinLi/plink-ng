@@ -17,8 +17,20 @@ SparseTest123 <- function(mat, y, group, lambda_seq) {
     .Call(`_pgenlibr_SparseTest123`, mat, y, group, lambda_seq)
 }
 
-ComputeLambdaMax <- function(mat, y, group, offset) {
-    .Call(`_pgenlibr_ComputeLambdaMax`, mat, y, group, offset)
+NewResponseObj <- function(y, family, status = NULL, offset = NULL) {
+    .Call(`_pgenlibr_NewResponseObj`, y, family, status, offset)
+}
+
+NewProxObj <- function(ni, group) {
+    .Call(`_pgenlibr_NewProxObj`, ni, group)
+}
+
+FitGroupLasso <- function(mat, prox, response, lambda_seq) {
+    .Call(`_pgenlibr_FitGroupLasso`, mat, prox, response, lambda_seq)
+}
+
+ComputeLambdaMax <- function(mat, response, group) {
+    .Call(`_pgenlibr_ComputeLambdaMax`, mat, response, group)
 }
 
 match_sorted_snp <- function(chr, pos, refpos, refcumu) {

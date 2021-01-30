@@ -5,14 +5,22 @@ double ProximalGradient::get_step_size(){
     return step_size;
 }
 
+uint32_t ProximalGradient::get_ni(){
+  return ni;
+}
+
 ProximalGradient::ProximalGradient(const double *beta_init, const uint32_t ni,
                                    const IntegerVector group)
-    : group_cumu(&group[0]), ngroup(group.size() - 1) {
+    : ngroup(group.size() - 1) {
   this->ni = ni;
   beta = (double *)malloc(sizeof(double) * ni);
   beta_next = (double *)malloc(sizeof(double) * ni);
   beta_prev = (double *)malloc(sizeof(double) * ni);
   grad = (double *)malloc(sizeof(double) * ni);
+  group_cumu = (uint32_t *)malloc(sizeof(uint32_t) * group.size());
+  for(uint32_t i = 0; i < group.size(); ++i){
+    group_cumu[i] = group[i];
+  }
   step_size = 1;
   weight_old = 1;
   if (beta_init) {
@@ -33,6 +41,8 @@ ProximalGradient::~ProximalGradient(){
     free(beta_next);
     free(beta_prev);
     free(grad);
+    free(group_cumu);
+    Rprintf("Hahaha\n");
 }
 
 void ProximalGradient::prox(double lambda){
@@ -57,9 +67,6 @@ void ProximalGradient::prox(double lambda){
             beta_next[i] *= multiplier;
         }
     }
-    // for(uint32_t i = 0; i < ni; ++i){
-    //     beta_next[i] = beta[i] - step_size * grad[i];
-    // }
     return;
 }
 
@@ -87,7 +94,7 @@ void ProximalGradient::reset_nesterov_weight(){
     weight_old = 1;
 }
 
-void solver(const sparse_snp &X, const Family *y, ProximalGradient &prox,
+void solver(const sparse_snp &X, const Family &y, ProximalGradient &prox,
             NumericVector lambda_seq, double *result_buffer) {
   const uint32_t ni = X.Getncol();
   const uint32_t no = X.Getnrow();
@@ -103,7 +110,7 @@ void solver(const sparse_snp &X, const Family *y, ProximalGradient &prox,
     for (int t = 0; t < 2000; ++t) {
       // Initialize eta, residual
       X.xv(prox.beta, eta);
-      current_val = y->get_residual(eta, residual);
+      current_val = y.get_residual(eta, residual);
 
       // Compute gradient
       X.vtx(residual, prox.grad);
@@ -115,7 +122,7 @@ void solver(const sparse_snp &X, const Family *y, ProximalGradient &prox,
 
         // compute the value at the proposed parameters prox.beta_next
         X.xv(prox.beta_next, eta);
-        next_val = y->get_value(eta);
+        next_val = y.get_value(eta);
         double diff_bound = prox.quadratic_diff();
 
         if (next_val <= current_val + diff_bound) {
@@ -169,30 +176,90 @@ NumericMatrix SparseTest123(List mat, NumericVector y, IntegerVector group, Nume
   NumericMatrix result(x->Getncol(), lambda_seq.size());
   Gaussian response(&y[0], nullptr, x->Getnrow());
   ProximalGradient prox(nullptr, x->Getncol(), group);
-  solver(*x, &response, prox, lambda_seq, &result[0]);
+  solver(*x, response, prox, lambda_seq, &result[0]);
   return result;
 }
 
 // [[Rcpp::export]]
-NumericVector ComputeLambdaMax(List mat, NumericVector y, IntegerVector group,
-                               NumericVector offset) {
+SEXP NewResponseObj(NumericVector y, String family, Nullable<NumericVector> status=R_NilValue, Nullable<NumericVector> offset=R_NilValue){
+  Family * fptr = nullptr;
+  if(strcmp_r_c(family, "gaussian") == 0){
+    fptr = new Gaussian(&y[0], nullptr, y.size());
+  } else {
+    stop("Not implemented yet");
+  }
+  XPtr<class Family> fxptr(fptr, true);
+  return List::create(_["class"] = "response", _["response"] = fxptr);
+}
+
+// [[Rcpp::export]]
+SEXP NewProxObj(int ni, IntegerVector group){
+  ProximalGradient * pgptr = new ProximalGradient(nullptr, ni, group);
+  XPtr<class ProximalGradient> pgxprt(pgptr, true);
+  return List::create(_["class"] = "prox", _["prox"] = pgxprt);
+}
+
+// [[Rcpp::export]]
+NumericMatrix FitGroupLasso(List mat, List prox, List response, NumericVector lambda_seq) {
   if (strcmp_r_c(mat[0], "sparse_snp")) {
     stop("matrix not the right type");
   }
-  XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
-  uint32_t no = y.size();
-  double *user_offset = &offset[0];
-  Gaussian response(&y[0], user_offset, no);
 
+  if (strcmp_r_c(prox[0], "prox")) {
+    stop("Proximal operator not the right type");
+  }
+
+  if (strcmp_r_c(response[0], "response")) {
+    stop("response not the right type");
+  }
+
+  XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
+  XPtr<class ProximalGradient> proxptr = as<XPtr<class ProximalGradient> >(prox[1]);
+  XPtr<class Family> responseptr = as<XPtr<class Family> >(response[1]);
+
+  const uint32_t no = x->Getnrow();
+  const uint32_t ni = x->Getncol();
+  if(no != responseptr->get_no()){
+    stop("The row number of the matrix does not match the length of y");
+  }
+
+  if(ni != proxptr->get_ni()){
+    stop("The column number of the matrix does not match the proximal operator");
+  }
+
+  NumericMatrix result(ni, lambda_seq.size());
+  solver(*x, *responseptr, *proxptr, lambda_seq, &result[0]);
+  return result;
+}
+
+
+// [[Rcpp::export]]
+double ComputeLambdaMax(List mat, List response, IntegerVector group) {
+  if (strcmp_r_c(mat[0], "sparse_snp")) {
+    stop("matrix not the right type");
+  }
+
+  if (strcmp_r_c(response[0], "response")) {
+    stop("response not the right type");
+  }
+
+  XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
+  XPtr<class Family> responseptr = as<XPtr<class Family> >(response[1]);
+  const uint32_t no = x->Getnrow();
+  const uint32_t ni = x->Getncol();
+
+  if(no != responseptr->get_no()){
+    stop("The row number of the matrix does not match the length of y");
+  }
 
   double *residual = (double *)malloc(sizeof(double)*no);
   double *eta = (double *)malloc(sizeof(double)*no);
-  double *grad = (double *)malloc(sizeof(double)*(x->Getncol()));
+  double *grad = (double *)malloc(sizeof(double)*(ni));
 
   for(uint32_t i = 0; i < no; ++i){
       eta[i] = 0;
   }
-  response.get_residual(eta, residual);
+  responseptr->get_residual(eta, residual);
   x->vtx(residual, grad);
   double result = 0;
   for(uint32_t g = 0; g < (group.size() - 1); ++g){
@@ -206,12 +273,12 @@ NumericVector ComputeLambdaMax(List mat, NumericVector y, IntegerVector group,
     gnorm = sqrt(gnorm / gsize);
     result = fmax(result , gnorm);
   }
-  NumericVector toreturn(1);
-  toreturn[0] = result;
+  // NumericVector toreturn(1);
+  // toreturn[0] = result;
   free(residual);
   free(eta);
   free(grad);
-  return toreturn;
+  return result;
 }
 
 // A utility function, might as well put here

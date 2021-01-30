@@ -49,7 +49,7 @@ Logistic::Logistic(const double * original_y, const double * user_offset, const 
     for(uint32_t i = 0; i < no; ++i) {
         y[i] = original_y[i];
     }
-    if (offset) {
+    if (user_offset) {
         offset = (double *)malloc(sizeof(double) * no);
         for (uint32_t i = 0; i < no; ++i) {
             offset[i] = user_offset[i];

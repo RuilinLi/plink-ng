@@ -12,7 +12,7 @@ class ProximalGradient {
     uint32_t ni;
     double weight_old;
     double weight_new;
-    const int * group_cumu;
+    uint32_t * group_cumu;
     const uint32_t ngroup;
 
    public:
@@ -30,6 +30,7 @@ class ProximalGradient {
     double quadratic_diff();
     void nesterov_update();
     void reset_nesterov_weight();
+    uint32_t get_ni();
 };
 
 void solver(const sparse_snp &X, const Family *y, const double *beta_init);
