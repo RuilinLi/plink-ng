@@ -423,27 +423,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// TransMultv
-NumericVector TransMultv(List mat, NumericVector v);
-RcppExport SEXP _pgenlibr_TransMultv(SEXP matSEXP, SEXP vSEXP) {
+// SparseTransMultv
+NumericVector SparseTransMultv(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_SparseTransMultv(SEXP matSEXP, SEXP vSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type mat(matSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(TransMultv(mat, v));
+    rcpp_result_gen = Rcpp::wrap(SparseTransMultv(mat, v));
     return rcpp_result_gen;
 END_RCPP
 }
-// Multv
-NumericVector Multv(List mat, NumericVector v);
-RcppExport SEXP _pgenlibr_Multv(SEXP matSEXP, SEXP vSEXP) {
+// SparseMultv
+NumericVector SparseMultv(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_SparseMultv(SEXP matSEXP, SEXP vSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type mat(matSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(Multv(mat, v));
+    rcpp_result_gen = Rcpp::wrap(SparseMultv(mat, v));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -494,8 +494,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pgenlibr_GetAlleleCode", (DL_FUNC) &_pgenlibr_GetAlleleCode, 3},
     {"_pgenlibr_ClosePvar", (DL_FUNC) &_pgenlibr_ClosePvar, 1},
     {"_pgenlibr_NewSparse", (DL_FUNC) &_pgenlibr_NewSparse, 2},
-    {"_pgenlibr_TransMultv", (DL_FUNC) &_pgenlibr_TransMultv, 2},
-    {"_pgenlibr_Multv", (DL_FUNC) &_pgenlibr_Multv, 2},
+    {"_pgenlibr_SparseTransMultv", (DL_FUNC) &_pgenlibr_SparseTransMultv, 2},
+    {"_pgenlibr_SparseMultv", (DL_FUNC) &_pgenlibr_SparseMultv, 2},
     {"_pgenlibr_GetSparseMeanImputation", (DL_FUNC) &_pgenlibr_GetSparseMeanImputation, 1},
     {NULL, NULL, 0}
 };

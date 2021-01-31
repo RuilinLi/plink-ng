@@ -137,12 +137,12 @@ NewSparse <- function(pgen, variant_subset) {
     .Call(`_pgenlibr_NewSparse`, pgen, variant_subset)
 }
 
-TransMultv <- function(mat, v) {
-    .Call(`_pgenlibr_TransMultv`, mat, v)
+SparseTransMultv <- function(mat, v) {
+    .Call(`_pgenlibr_SparseTransMultv`, mat, v)
 }
 
-Multv <- function(mat, v) {
-    .Call(`_pgenlibr_Multv`, mat, v)
+SparseMultv <- function(mat, v) {
+    .Call(`_pgenlibr_SparseMultv`, mat, v)
 }
 
 GetSparseMeanImputation <- function(mat) {
