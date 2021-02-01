@@ -142,7 +142,7 @@ void solver(const sparse_snp &X, const Family &y, ProximalGradient &prox,
       // double val_change = abs(next_val - current_val)/fmax(1.0,
       // abs(current_val));
       double val_change = abs((next_val - current_val) / current_val);
-      if ((val_change < 1e-7) || (next_val < 1e-6)) {
+      if ((val_change < 1e-5) || (next_val < 1e-6)) {
         Rprintf("val_change is %f\n", val_change);
         Rprintf("next_val is %f\n", next_val);
         Rprintf("Converged at iteration %d\n", t);
