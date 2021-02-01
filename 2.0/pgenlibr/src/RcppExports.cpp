@@ -57,16 +57,30 @@ BEGIN_RCPP
 END_RCPP
 }
 // NewResponseObj
-SEXP NewResponseObj(NumericVector y, String family, Nullable<NumericVector> status, Nullable<NumericVector> offset);
-RcppExport SEXP _pgenlibr_NewResponseObj(SEXP ySEXP, SEXP familySEXP, SEXP statusSEXP, SEXP offsetSEXP) {
+SEXP NewResponseObj(NumericVector y, String family, Nullable<NumericVector> offset);
+RcppExport SEXP _pgenlibr_NewResponseObj(SEXP ySEXP, SEXP familySEXP, SEXP offsetSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
     Rcpp::traits::input_parameter< String >::type family(familySEXP);
-    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type status(statusSEXP);
     Rcpp::traits::input_parameter< Nullable<NumericVector> >::type offset(offsetSEXP);
-    rcpp_result_gen = Rcpp::wrap(NewResponseObj(y, family, status, offset));
+    rcpp_result_gen = Rcpp::wrap(NewResponseObj(y, family, offset));
+    return rcpp_result_gen;
+END_RCPP
+}
+// NewCoxResponseObj
+SEXP NewCoxResponseObj(NumericVector status, IntegerVector order0, IntegerVector rankmin0, IntegerVector rankmax0, Nullable<NumericVector> offset);
+RcppExport SEXP _pgenlibr_NewCoxResponseObj(SEXP statusSEXP, SEXP order0SEXP, SEXP rankmin0SEXP, SEXP rankmax0SEXP, SEXP offsetSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type status(statusSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type order0(order0SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type rankmin0(rankmin0SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type rankmax0(rankmax0SEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type offset(offsetSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewCoxResponseObj(status, order0, rankmin0, rankmax0, offset));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -464,7 +478,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pgenlibr_DenseTransMultv", (DL_FUNC) &_pgenlibr_DenseTransMultv, 2},
     {"_pgenlibr_DenseMultv", (DL_FUNC) &_pgenlibr_DenseMultv, 2},
     {"_pgenlibr_SparseTest123", (DL_FUNC) &_pgenlibr_SparseTest123, 4},
-    {"_pgenlibr_NewResponseObj", (DL_FUNC) &_pgenlibr_NewResponseObj, 4},
+    {"_pgenlibr_NewResponseObj", (DL_FUNC) &_pgenlibr_NewResponseObj, 3},
+    {"_pgenlibr_NewCoxResponseObj", (DL_FUNC) &_pgenlibr_NewCoxResponseObj, 5},
     {"_pgenlibr_NewProxObj", (DL_FUNC) &_pgenlibr_NewProxObj, 2},
     {"_pgenlibr_FitGroupLasso", (DL_FUNC) &_pgenlibr_FitGroupLasso, 4},
     {"_pgenlibr_ComputeLambdaMax", (DL_FUNC) &_pgenlibr_ComputeLambdaMax, 3},

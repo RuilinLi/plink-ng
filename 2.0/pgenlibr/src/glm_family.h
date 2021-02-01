@@ -41,4 +41,30 @@ class Logistic : public Family {
 
 };
 
+typedef struct d2 {
+    double value;
+    double eta_mean;
+    d2(const double v, const double e) : value(v), eta_mean(e){}
+} d2;
+
+class Cox : public Family {
+    private:
+    uint32_t *rank_to_ind; // maps rank to observation index
+    // status, offset are both in the original order
+    // Normalization is done through status
+    uint32_t *rankmin;
+    uint32_t *rankmax;
+    double *rskdenom;
+    double * status;
+    double *offset;
+
+    public:
+    Cox(const int *rank, const int* rankmin, const int *rankmax, const double * status,  const double * user_offset, const uint32_t no);
+    ~Cox();
+    double get_residual(const double * eta, double * r) const;
+    double get_value(const double * eta) const;
+    d2 get_value_and_eta_mean(const double * eta) const;
+
+};
+
 #endif

@@ -115,8 +115,10 @@ void solver(const sparse_snp &X, const Family &y, ProximalGradient &prox,
       // Compute gradient
       X.vtx(residual, prox.grad);
       // backtracking line search
+      int last_time_increase_step_size = -1;
       while (true) {
         // Maybe try increasing step size occasionally?
+        int counter = 0;
         // merge gradient descent and prox together
         prox.prox(lambda);
 
@@ -125,19 +127,26 @@ void solver(const sparse_snp &X, const Family &y, ProximalGradient &prox,
         next_val = y.get_value(eta);
         double diff_bound = prox.quadratic_diff();
 
+
         if (next_val <= current_val + diff_bound) {
+          if(counter == 0 && (last_time_increase_step_size == t - 1)){
+            prox.step_size *= 1.1;
+            last_time_increase_step_size = t;
+          }
           break;
         }
+        counter++;
         prox.step_size /= 1.1;
       }
 
       // double val_change = abs(next_val - current_val)/fmax(1.0,
       // abs(current_val));
       double val_change = abs((next_val - current_val) / current_val);
-      if ((val_change < 1e-5) || (next_val < 1e-6)) {
+      if ((val_change < 1e-7) || (next_val < 1e-6)) {
         Rprintf("val_change is %f\n", val_change);
         Rprintf("next_val is %f\n", next_val);
         Rprintf("Converged at iteration %d\n", t);
+        Rprintf("step size is %f, \n", prox.step_size);
         break;
       }
 
@@ -181,13 +190,33 @@ NumericMatrix SparseTest123(List mat, NumericVector y, IntegerVector group, Nume
 }
 
 // [[Rcpp::export]]
-SEXP NewResponseObj(NumericVector y, String family, Nullable<NumericVector> status=R_NilValue, Nullable<NumericVector> offset=R_NilValue){
+SEXP NewResponseObj(NumericVector y, String family, Nullable<NumericVector> offset=R_NilValue){
   Family * fptr = nullptr;
   if(strcmp_r_c(family, "gaussian") == 0){
     fptr = new Gaussian(&y[0], nullptr, y.size());
+  } else if (strcmp_r_c(family, "binomial") == 0) {
+    if(offset.isNotNull()){
+      NumericVector offset_vector(offset);
+      fptr = new Logistic(&y[0], &offset_vector[0], y.size());
+    } else {
+      fptr = new Logistic(&y[0], nullptr, y.size());
+    }
   } else {
-    stop("Not implemented yet");
+    stop("This function only supports gaussian and binomial family");
   }
+  XPtr<class Family> fxptr(fptr, true);
+  return List::create(_["class"] = "response", _["response"] = fxptr);
+}
+
+// [[Rcpp::export]]
+SEXP NewCoxResponseObj(NumericVector status, IntegerVector order0, IntegerVector rankmin0, IntegerVector rankmax0, Nullable<NumericVector> offset=R_NilValue){
+  Family * fptr = nullptr;
+  double *offsetptr = nullptr;
+  if(offset.isNotNull()){
+    NumericVector offset_vector(offset);
+    offsetptr = &offset_vector[0];
+  }
+  fptr = new Cox(&order0[0], &rankmin0[0], &rankmax0[0], &status[0], offsetptr, status.size());
   XPtr<class Family> fxptr(fptr, true);
   return List::create(_["class"] = "response", _["response"] = fxptr);
 }

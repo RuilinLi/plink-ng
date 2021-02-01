@@ -17,8 +17,12 @@ SparseTest123 <- function(mat, y, group, lambda_seq) {
     .Call(`_pgenlibr_SparseTest123`, mat, y, group, lambda_seq)
 }
 
-NewResponseObj <- function(y, family, status = NULL, offset = NULL) {
-    .Call(`_pgenlibr_NewResponseObj`, y, family, status, offset)
+NewResponseObj <- function(y, family, offset = NULL) {
+    .Call(`_pgenlibr_NewResponseObj`, y, family, offset)
+}
+
+NewCoxResponseObj <- function(status, order0, rankmin0, rankmax0, offset = NULL) {
+    .Call(`_pgenlibr_NewCoxResponseObj`, status, order0, rankmin0, rankmax0, offset)
 }
 
 NewProxObj <- function(ni, group) {
