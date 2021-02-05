@@ -5,6 +5,138 @@
 
 using namespace Rcpp;
 
+// NewDense
+SEXP NewDense(List pgen, IntegerVector variant_subset, Nullable<NumericVector> meanimp);
+RcppExport SEXP _pgenlibr_NewDense(SEXP pgenSEXP, SEXP variant_subsetSEXP, SEXP meanimpSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type pgen(pgenSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type variant_subset(variant_subsetSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type meanimp(meanimpSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewDense(pgen, variant_subset, meanimp));
+    return rcpp_result_gen;
+END_RCPP
+}
+// DenseTransMultv
+NumericVector DenseTransMultv(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_DenseTransMultv(SEXP matSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
+    rcpp_result_gen = Rcpp::wrap(DenseTransMultv(mat, v));
+    return rcpp_result_gen;
+END_RCPP
+}
+// DenseMultv
+NumericVector DenseMultv(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_DenseMultv(SEXP matSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
+    rcpp_result_gen = Rcpp::wrap(DenseMultv(mat, v));
+    return rcpp_result_gen;
+END_RCPP
+}
+// SparseTest123
+NumericMatrix SparseTest123(List mat, NumericVector y, IntegerVector group, NumericVector lambda_seq);
+RcppExport SEXP _pgenlibr_SparseTest123(SEXP matSEXP, SEXP ySEXP, SEXP groupSEXP, SEXP lambda_seqSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type group(groupSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type lambda_seq(lambda_seqSEXP);
+    rcpp_result_gen = Rcpp::wrap(SparseTest123(mat, y, group, lambda_seq));
+    return rcpp_result_gen;
+END_RCPP
+}
+// NewResponseObj
+SEXP NewResponseObj(NumericVector y, String family, Nullable<NumericVector> offset);
+RcppExport SEXP _pgenlibr_NewResponseObj(SEXP ySEXP, SEXP familySEXP, SEXP offsetSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< String >::type family(familySEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type offset(offsetSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewResponseObj(y, family, offset));
+    return rcpp_result_gen;
+END_RCPP
+}
+// NewCoxResponseObj
+SEXP NewCoxResponseObj(NumericVector status, IntegerVector order0, IntegerVector rankmin0, IntegerVector rankmax0, Nullable<NumericVector> offset);
+RcppExport SEXP _pgenlibr_NewCoxResponseObj(SEXP statusSEXP, SEXP order0SEXP, SEXP rankmin0SEXP, SEXP rankmax0SEXP, SEXP offsetSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type status(statusSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type order0(order0SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type rankmin0(rankmin0SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type rankmax0(rankmax0SEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type offset(offsetSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewCoxResponseObj(status, order0, rankmin0, rankmax0, offset));
+    return rcpp_result_gen;
+END_RCPP
+}
+// NewProxObj
+SEXP NewProxObj(int ni, IntegerVector group);
+RcppExport SEXP _pgenlibr_NewProxObj(SEXP niSEXP, SEXP groupSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type ni(niSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type group(groupSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewProxObj(ni, group));
+    return rcpp_result_gen;
+END_RCPP
+}
+// FitProx
+NumericMatrix FitProx(List mat, List prox, List response, NumericVector lambda_seq);
+RcppExport SEXP _pgenlibr_FitProx(SEXP matSEXP, SEXP proxSEXP, SEXP responseSEXP, SEXP lambda_seqSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< List >::type prox(proxSEXP);
+    Rcpp::traits::input_parameter< List >::type response(responseSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type lambda_seq(lambda_seqSEXP);
+    rcpp_result_gen = Rcpp::wrap(FitProx(mat, prox, response, lambda_seq));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ComputeLambdaMax
+double ComputeLambdaMax(List mat, List response, IntegerVector group);
+RcppExport SEXP _pgenlibr_ComputeLambdaMax(SEXP matSEXP, SEXP responseSEXP, SEXP groupSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< List >::type response(responseSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type group(groupSEXP);
+    rcpp_result_gen = Rcpp::wrap(ComputeLambdaMax(mat, response, group));
+    return rcpp_result_gen;
+END_RCPP
+}
+// match_sorted_snp
+IntegerVector match_sorted_snp(IntegerVector chr, IntegerVector pos, IntegerVector refpos, IntegerVector refcumu);
+RcppExport SEXP _pgenlibr_match_sorted_snp(SEXP chrSEXP, SEXP posSEXP, SEXP refposSEXP, SEXP refcumuSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type chr(chrSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type pos(posSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type refpos(refposSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type refcumu(refcumuSEXP);
+    rcpp_result_gen = Rcpp::wrap(match_sorted_snp(chr, pos, refpos, refcumu));
+    return rcpp_result_gen;
+END_RCPP
+}
 // getcompactptr
 SEXP getcompactptr(String filename, IntegerVector variant_subset, Nullable<IntegerVector> sample_subset, NumericVector xim, Nullable<List> pvar, Nullable<int> raw_sample_ct);
 RcppExport SEXP _pgenlibr_getcompactptr(SEXP filenameSEXP, SEXP variant_subsetSEXP, SEXP sample_subsetSEXP, SEXP ximSEXP, SEXP pvarSEXP, SEXP raw_sample_ctSEXP) {
@@ -293,8 +425,65 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// NewSparse
+SEXP NewSparse(List pgen, IntegerVector variant_subset);
+RcppExport SEXP _pgenlibr_NewSparse(SEXP pgenSEXP, SEXP variant_subsetSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type pgen(pgenSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type variant_subset(variant_subsetSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewSparse(pgen, variant_subset));
+    return rcpp_result_gen;
+END_RCPP
+}
+// SparseTransMultv
+NumericVector SparseTransMultv(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_SparseTransMultv(SEXP matSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
+    rcpp_result_gen = Rcpp::wrap(SparseTransMultv(mat, v));
+    return rcpp_result_gen;
+END_RCPP
+}
+// SparseMultv
+NumericVector SparseMultv(List mat, NumericVector v);
+RcppExport SEXP _pgenlibr_SparseMultv(SEXP matSEXP, SEXP vSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
+    rcpp_result_gen = Rcpp::wrap(SparseMultv(mat, v));
+    return rcpp_result_gen;
+END_RCPP
+}
+// GetSparseMeanImputation
+NumericVector GetSparseMeanImputation(List mat);
+RcppExport SEXP _pgenlibr_GetSparseMeanImputation(SEXP matSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
+    rcpp_result_gen = Rcpp::wrap(GetSparseMeanImputation(mat));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_pgenlibr_NewDense", (DL_FUNC) &_pgenlibr_NewDense, 3},
+    {"_pgenlibr_DenseTransMultv", (DL_FUNC) &_pgenlibr_DenseTransMultv, 2},
+    {"_pgenlibr_DenseMultv", (DL_FUNC) &_pgenlibr_DenseMultv, 2},
+    {"_pgenlibr_SparseTest123", (DL_FUNC) &_pgenlibr_SparseTest123, 4},
+    {"_pgenlibr_NewResponseObj", (DL_FUNC) &_pgenlibr_NewResponseObj, 3},
+    {"_pgenlibr_NewCoxResponseObj", (DL_FUNC) &_pgenlibr_NewCoxResponseObj, 5},
+    {"_pgenlibr_NewProxObj", (DL_FUNC) &_pgenlibr_NewProxObj, 2},
+    {"_pgenlibr_FitProx", (DL_FUNC) &_pgenlibr_FitProx, 4},
+    {"_pgenlibr_ComputeLambdaMax", (DL_FUNC) &_pgenlibr_ComputeLambdaMax, 3},
+    {"_pgenlibr_match_sorted_snp", (DL_FUNC) &_pgenlibr_match_sorted_snp, 4},
     {"_pgenlibr_getcompactptr", (DL_FUNC) &_pgenlibr_getcompactptr, 6},
     {"_pgenlibr_getcompactptrfromPgen", (DL_FUNC) &_pgenlibr_getcompactptrfromPgen, 4},
     {"_pgenlibr_NewPgen", (DL_FUNC) &_pgenlibr_NewPgen, 4},
@@ -319,6 +508,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pgenlibr_GetVariantId", (DL_FUNC) &_pgenlibr_GetVariantId, 2},
     {"_pgenlibr_GetAlleleCode", (DL_FUNC) &_pgenlibr_GetAlleleCode, 3},
     {"_pgenlibr_ClosePvar", (DL_FUNC) &_pgenlibr_ClosePvar, 1},
+    {"_pgenlibr_NewSparse", (DL_FUNC) &_pgenlibr_NewSparse, 2},
+    {"_pgenlibr_SparseTransMultv", (DL_FUNC) &_pgenlibr_SparseTransMultv, 2},
+    {"_pgenlibr_SparseMultv", (DL_FUNC) &_pgenlibr_SparseMultv, 2},
+    {"_pgenlibr_GetSparseMeanImputation", (DL_FUNC) &_pgenlibr_GetSparseMeanImputation, 1},
     {NULL, NULL, 0}
 };
 

@@ -81,3 +81,11 @@ t1 = Sys.time()
 a3 = glmnet(m2, y2, "binomial", standardize=F, lambda.min.ratio=0.5 , nlambda = 3,intercept=T)
 print(a3$npasses)
 print(Sys.time() - t1)
+
+
+
+chr = seq(5)
+pos = as.integer(c(3,1,5,2,4))
+refpos = rep(seq(10),5)
+refcumu = (0:5)*10
+match_sorted_snp(chr, pos, refpos, refcumu)
