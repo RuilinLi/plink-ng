@@ -1,7 +1,5 @@
 #include "pgenlibr.h"
-#include <chrono>
 using namespace std; 
-using namespace std::chrono;
 
 static constexpr int ROW_BLOCK = 16;
 static constexpr int COL_BLOCK = 16;

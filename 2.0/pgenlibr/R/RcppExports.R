@@ -29,8 +29,8 @@ NewProxObj <- function(ni, group) {
     .Call(`_pgenlibr_NewProxObj`, ni, group)
 }
 
-FitGroupLasso <- function(mat, prox, response, lambda_seq) {
-    .Call(`_pgenlibr_FitGroupLasso`, mat, prox, response, lambda_seq)
+FitProx <- function(mat, prox, response, lambda_seq) {
+    .Call(`_pgenlibr_FitProx`, mat, prox, response, lambda_seq)
 }
 
 ComputeLambdaMax <- function(mat, response, group) {

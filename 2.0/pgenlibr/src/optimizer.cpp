@@ -229,7 +229,7 @@ SEXP NewProxObj(int ni, IntegerVector group){
 }
 
 // [[Rcpp::export]]
-NumericMatrix FitGroupLasso(List mat, List prox, List response, NumericVector lambda_seq) {
+NumericMatrix FitProx(List mat, List prox, List response, NumericVector lambda_seq) {
   if (strcmp_r_c(mat[0], "sparse_snp")) {
     stop("matrix not the right type");
   }

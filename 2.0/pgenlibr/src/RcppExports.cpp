@@ -96,9 +96,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// FitGroupLasso
-NumericMatrix FitGroupLasso(List mat, List prox, List response, NumericVector lambda_seq);
-RcppExport SEXP _pgenlibr_FitGroupLasso(SEXP matSEXP, SEXP proxSEXP, SEXP responseSEXP, SEXP lambda_seqSEXP) {
+// FitProx
+NumericMatrix FitProx(List mat, List prox, List response, NumericVector lambda_seq);
+RcppExport SEXP _pgenlibr_FitProx(SEXP matSEXP, SEXP proxSEXP, SEXP responseSEXP, SEXP lambda_seqSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -106,7 +106,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type prox(proxSEXP);
     Rcpp::traits::input_parameter< List >::type response(responseSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type lambda_seq(lambda_seqSEXP);
-    rcpp_result_gen = Rcpp::wrap(FitGroupLasso(mat, prox, response, lambda_seq));
+    rcpp_result_gen = Rcpp::wrap(FitProx(mat, prox, response, lambda_seq));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -481,7 +481,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pgenlibr_NewResponseObj", (DL_FUNC) &_pgenlibr_NewResponseObj, 3},
     {"_pgenlibr_NewCoxResponseObj", (DL_FUNC) &_pgenlibr_NewCoxResponseObj, 5},
     {"_pgenlibr_NewProxObj", (DL_FUNC) &_pgenlibr_NewProxObj, 2},
-    {"_pgenlibr_FitGroupLasso", (DL_FUNC) &_pgenlibr_FitGroupLasso, 4},
+    {"_pgenlibr_FitProx", (DL_FUNC) &_pgenlibr_FitProx, 4},
     {"_pgenlibr_ComputeLambdaMax", (DL_FUNC) &_pgenlibr_ComputeLambdaMax, 3},
     {"_pgenlibr_match_sorted_snp", (DL_FUNC) &_pgenlibr_match_sorted_snp, 4},
     {"_pgenlibr_getcompactptr", (DL_FUNC) &_pgenlibr_getcompactptr, 6},
