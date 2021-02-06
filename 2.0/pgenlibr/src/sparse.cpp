@@ -1,5 +1,5 @@
 #include "pgenlibr.h"
-using namespace std; 
+
 
 static constexpr int ROW_BLOCK = 16;
 static constexpr int COL_BLOCK = 16;
@@ -318,7 +318,6 @@ sparse_snp::~sparse_snp() {
         plink2::aligned_free(diffvec);
         free(dense_ind);
         plink2::aligned_free(genovec);
-        std::cout << "freed " << std::endl;
     }
 }
 

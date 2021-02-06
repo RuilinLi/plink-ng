@@ -42,7 +42,6 @@ ProximalGradient::~ProximalGradient(){
     free(beta_prev);
     free(grad);
     free(group_cumu);
-    Rprintf("Hahaha\n");
 }
 
 void ProximalGradient::prox(double lambda){
