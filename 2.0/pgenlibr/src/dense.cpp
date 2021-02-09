@@ -160,7 +160,7 @@ void dense_snp::xv(const double *v, double *result) const {
 
 
 // [[Rcpp::export]]
-SEXP NewDense(List pgen, IntegerVector variant_subset, Nullable<NumericVector> meanimp) {
+SEXP NewDense(List pgen, IntegerVector variant_subset, Nullable<NumericVector> meanimp=R_NilValue) {
    if (strcmp_r_c(pgen[0], "pgen")) {
     stop("pgen is not a pgen object");
   }
