@@ -1,5 +1,13 @@
 SOURCES = $(wildcard zstd/lib/compress/*.c) $(wildcard zstd/lib/decompress/*.c) $(wildcard zstd/lib/common/*.c) $(wildcard libdeflate/lib/*.c) $(wildcard libdeflate/lib/x86/*.c)
 OBJECTS = include/plink2_base.o include/plink2_bits.o include/pgenlib_misc.o include/pgenlib_read.o include/plink2_bgzf.o include/plink2_string.o include/plink2_text.o include/plink2_thread.o include/plink2_zstfile.o $(SOURCES:.c=.o) $(patsubst %.cpp, %.o,$(wildcard *.cpp))
 PKG_CFLAGS = -Izstd/lib -Izstd/lib/common -Ilibdeflate -Ilibdeflate/common
-PKG_CPPFLAGS = -DSTATIC_ZSTD -Izstd/lib -Izstd/lib/common -O3 -fopenmp
 PKG_LIBS = -lpthread
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+PKG_CPPFLAGS = -DSTATIC_ZSTD -Izstd/lib -Izstd/lib/common -O3 -fopenmp
+endif
+
+ifeq ($(UNAME_S),Darwin)
+PKG_CPPFLAGS= -DSTATIC_ZSTD -Izstd/lib -Izstd/lib/common -O3 -Xpreprocessor -fopenmp
+endif
