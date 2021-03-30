@@ -1,8 +1,20 @@
 #include "pgenlibr.h"
 #include "omp.h"
 
+uint32_t base_snp::Getncol() const {
+    return ni + ncov;
+}
 
-void RPgenReader::LoadDense(dense_snp &x, IntegerVector variant_subset) {
+uint32_t base_snp::Getnrow() const {
+    return no;
+}
+
+base_snp::~base_snp(){
+
+}
+
+
+void RPgenReader::LoadDense(dense_snp &x, IntegerVector variant_subset, Nullable<NumericMatrix> covariates) {
     if (!_info_ptr)
     {
         stop("pgen is closed");
@@ -16,6 +28,19 @@ void RPgenReader::LoadDense(dense_snp &x, IntegerVector variant_subset) {
     ReadCompactListNoDosage(&x.genovec, variant_subset, x.xim);
     size_t genovec_cacheline_ct = plink2::DivUp(_subset_size, plink2::kNypsPerCacheline);
     x.genovec_word_ct = genovec_cacheline_ct * plink2::kWordsPerCacheline;
+
+    if(covariates.isNotNull()){
+        NumericMatrix covM = as<NumericMatrix>(covariates);
+        if(covM.nrow() != _subset_size){
+            stop("Incorrect covariates dimensions");
+        }
+        // Copy the covariates to cov
+        x.ncov = covM.ncol();
+        x.cov = (double*)malloc(sizeof(double) * covM.ncol() * covM.nrow());
+        for(uint32_t i = 0; i < covM.ncol() * covM.nrow(); ++i){
+            x.cov[i] = covM[i];
+        }
+    }
     x.loaded = true;
     return;
 }
@@ -23,6 +48,8 @@ void RPgenReader::LoadDense(dense_snp &x, IntegerVector variant_subset) {
 dense_snp::dense_snp(){
     no = 0;
     ni = 0;
+    ncov = 0;
+    cov = nullptr;
     loaded = false;
 }
 
@@ -30,17 +57,13 @@ dense_snp::~dense_snp(){
     if (loaded) {
         free(xim);
         plink2::aligned_free(genovec);
+        if(cov){
+            free(cov);
+        }
     }
 }
 
 
-uint32_t dense_snp::Getnrow() const {
-    return no;
-}
-    
-uint32_t dense_snp::Getncol() const {
-    return ni;
-}
 
 void dense_snp::ResetMeanImputation(const NumericVector meanimp) {
     if(ni != meanimp.size()){
@@ -87,6 +110,15 @@ void dense_snp::vtx(const double *v, double *result) const{
             }
         }
         result[densecol_ind] = (result_1 + 2 * result_2 + xim[densecol_ind] * result_missing);
+    }
+
+    #pragma omp parallel for
+    for(uint32_t j = 0; j < ncov; ++j){
+        double dot_prod = 0;
+        for(uint32_t i = 0; i < no; ++i){
+            dot_prod += cov[j*no + i] * v[i];
+        }
+        result[j + ni] = dot_prod;
     }
 
 }
@@ -152,6 +184,17 @@ void dense_snp::xv(const double *v, double *result) const {
                 }
             }
         }
+        start *= plink2::kBitsPerWordD2;
+        end *= plink2::kBitsPerWordD2;
+        if(end > no){
+            end = no;
+        }
+
+        for(uint32_t j = 0; j < ncov; ++j){
+            for(uint32_t i = start; i < end; ++i){
+                result[i] += cov[j*no+i] * v[j + ni]; 
+            }
+        }
     }
     return;
 
@@ -159,13 +202,13 @@ void dense_snp::xv(const double *v, double *result) const {
 
 
 // [[Rcpp::export]]
-SEXP NewDense(List pgen, IntegerVector variant_subset, Nullable<NumericVector> meanimp=R_NilValue) {
+SEXP NewDense(List pgen, IntegerVector variant_subset, Nullable<NumericVector> meanimp=R_NilValue, Nullable<NumericMatrix> covariates=R_NilValue) {
    if (strcmp_r_c(pgen[0], "pgen")) {
     stop("pgen is not a pgen object");
   }
   XPtr<class RPgenReader> rp = as<XPtr<class RPgenReader> >(pgen[1]);
   XPtr<class dense_snp> xp(new dense_snp(), true);
-  rp->LoadDense(*xp, variant_subset);
+  rp->LoadDense(*xp, variant_subset, covariates);
   if(meanimp.isNotNull()){
       NumericVector newmean = as<NumericVector>(meanimp);
       xp->ResetMeanImputation(newmean);

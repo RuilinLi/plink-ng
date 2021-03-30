@@ -308,6 +308,7 @@ sparse_snp::sparse_snp()
     ndense = 0;
     ni = 0;
     no = 0;
+    ncov = 0; // Will add covariates to it later
 }
 
 sparse_snp::~sparse_snp() {
@@ -500,13 +501,6 @@ void sparse_snp::xv(const double *v, double * result) const {
 
 }
 
-uint32_t sparse_snp::Getnrow() const {
-    return no;
-}
-
-uint32_t sparse_snp::Getncol() const {
-    return ni;
-}
 
 void sparse_snp::CopyMeanImputation(double *dest) const {
     for(uint32_t i = 0; i < ni; ++i){

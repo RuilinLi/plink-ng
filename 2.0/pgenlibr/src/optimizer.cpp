@@ -9,18 +9,13 @@ uint32_t ProximalGradient::get_ni(){
   return ni;
 }
 
-ProximalGradient::ProximalGradient(const double *beta_init, const uint32_t ni,
-                                   const IntegerVector group)
-    : ngroup(group.size() - 1) {
+ProximalGradient::ProximalGradient(const double *beta_init, const uint32_t ni) 
+{
   this->ni = ni;
   beta = (double *)malloc(sizeof(double) * ni);
   beta_next = (double *)malloc(sizeof(double) * ni);
   beta_prev = (double *)malloc(sizeof(double) * ni);
   grad = (double *)malloc(sizeof(double) * ni);
-  group_cumu = (uint32_t *)malloc(sizeof(uint32_t) * group.size());
-  for(uint32_t i = 0; i < group.size(); ++i){
-    group_cumu[i] = group[i];
-  }
   step_size = 1;
   weight_old = 1;
   if (beta_init) {
@@ -36,16 +31,58 @@ ProximalGradient::ProximalGradient(const double *beta_init, const uint32_t ni,
   }
 }
 
+GroupPenalty::GroupPenalty(const double *beta_init, const uint32_t ni,
+                           const IntegerVector group)
+    : ProximalGradient(beta_init, ni), ngroup(group.size() - 1) {
+  group_cumu = (uint32_t *)malloc(sizeof(uint32_t) * group.size());
+  for (uint32_t i = 0; i < group.size(); ++i) {
+    group_cumu[i] = group[i];
+  }
+}
+
+GroupPenalty::~GroupPenalty(){
+  free(group_cumu);
+}
+
+LassoPenalty::LassoPenalty(const double *beta_init, const uint32_t ni,
+                           Nullable<NumericVector> penalty_factor)
+    : ProximalGradient(beta_init, ni) {
+  pfac = (double *)malloc(sizeof(double) * ni);
+  if (penalty_factor.isNotNull()) {
+    NumericVector p = as<NumericVector>(penalty_factor);
+    if (p.size() != ni) {
+      stop("Penalty factor size incorrect");
+    }
+    for (uint32_t i = 0; i < ni; ++i) {
+      pfac[i] = p[i];
+    }
+    return;
+  }
+  for (uint32_t i = 0; i < ni; ++i) {
+    pfac[i] = 1;
+  }
+}
+
+LassoPenalty::~LassoPenalty(){
+  free(pfac);
+}
+
+
 ProximalGradient::~ProximalGradient(){
     free(beta);
     free(beta_next);
     free(beta_prev);
     free(grad);
-    free(group_cumu);
 }
 
 void ProximalGradient::prox(double lambda){
-    // impelment prox operator later
+    for(uint32_t i = 0; i < ni; ++i){
+      beta_next[i] = beta[i] - step_size * grad[i];
+    }
+    return;
+}
+
+void GroupPenalty::prox(double lambda){
     #pragma omp parallel for
     for(uint32_t g = 0; g < ngroup; ++g){
         double gnorm = 0;
@@ -67,6 +104,14 @@ void ProximalGradient::prox(double lambda){
         }
     }
     return;
+}
+
+void LassoPenalty::prox(double lambda){
+  for(uint32_t i = 0; i < ni; ++i){
+    //beta_next[i] = beta[i] - step_size * grad[i];
+    double grad_step = beta[i] - step_size * grad[i];
+    beta_next[i] = copysign(fmax(abs(grad_step) - step_size * lambda, 0), grad_step);
+  }
 }
 
 void ProximalGradient::nesterov_update(){
@@ -93,7 +138,7 @@ void ProximalGradient::reset_nesterov_weight(){
     weight_old = 1;
 }
 
-void solver(const sparse_snp &X, const Family &y, ProximalGradient &prox,
+void solver(const base_snp &X, const Family &y, ProximalGradient &prox,
             NumericVector lambda_seq, double *result_buffer) {
   const uint32_t ni = X.Getncol();
   const uint32_t no = X.Getnrow();
@@ -171,23 +216,6 @@ void solver(const sparse_snp &X, const Family &y, ProximalGradient &prox,
 }
 
 
-
-// [[Rcpp::export]]
-NumericMatrix SparseTest123(List mat, NumericVector y, IntegerVector group, NumericVector lambda_seq) {
-  if (strcmp_r_c(mat[0], "sparse_snp")) {
-    stop("matrix not the right type");
-  }
-  XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
-  if(x->Getnrow() != y.size()){
-    stop("The row number of the matrix does not match the length of y");
-  }
-  NumericMatrix result(x->Getncol(), lambda_seq.size());
-  Gaussian response(&y[0], nullptr, x->Getnrow());
-  ProximalGradient prox(nullptr, x->Getncol(), group);
-  solver(*x, response, prox, lambda_seq, &result[0]);
-  return result;
-}
-
 // [[Rcpp::export]]
 SEXP NewResponseObj(NumericVector y, String family, Nullable<NumericVector> offset=R_NilValue){
   Family * fptr = nullptr;
@@ -222,14 +250,46 @@ SEXP NewCoxResponseObj(NumericVector status, IntegerVector order0, IntegerVector
 
 // [[Rcpp::export]]
 SEXP NewProxObj(int ni, IntegerVector group){
-  ProximalGradient * pgptr = new ProximalGradient(nullptr, ni, group);
+  ProximalGradient * pgptr = new GroupPenalty(nullptr, ni, group);
+  XPtr<class ProximalGradient> pgxprt(pgptr, true);
+  return List::create(_["class"] = "prox", _["prox"] = pgxprt);
+}
+
+// [[Rcpp::export]]
+SEXP NewLassoObj(int ni, Nullable<NumericVector> pfac=R_NilValue, Nullable<NumericVector> beta=R_NilValue){
+  double *beta_init = nullptr;
+  if(beta.isNotNull()){
+    NumericVector beta_vec = as<NumericVector>(beta);
+    if(beta_vec.size() != ni){
+      stop("Size of beta does not match number of variables");
+    }
+    beta_init = &beta_vec[0];
+  }
+
+  ProximalGradient * pgptr = new LassoPenalty(beta_init, ni, pfac);
+  XPtr<class ProximalGradient> pgxprt(pgptr, true);
+  return List::create(_["class"] = "prox", _["prox"] = pgxprt);
+}
+
+// [[Rcpp::export]]
+SEXP GradientDescentObj(int ni, Nullable<NumericVector> beta=R_NilValue){
+  double *beta_init = nullptr;
+  if(beta.isNotNull()){
+    NumericVector beta_vec = as<NumericVector>(beta);
+    if(beta_vec.size() != ni){
+      stop("Size of beta does not match number of variables");
+    }
+    beta_init = &beta_vec[0];
+  }
+
+  ProximalGradient * pgptr = new ProximalGradient(beta_init, ni);
   XPtr<class ProximalGradient> pgxprt(pgptr, true);
   return List::create(_["class"] = "prox", _["prox"] = pgxprt);
 }
 
 // [[Rcpp::export]]
 NumericMatrix FitProx(List mat, List prox, List response, NumericVector lambda_seq) {
-  if (strcmp_r_c(mat[0], "sparse_snp")) {
+  if (strcmp_r_c(mat[0], "sparse_snp") && strcmp_r_c(mat[0], "dense_snp")) {
     stop("matrix not the right type");
   }
 
@@ -241,7 +301,7 @@ NumericMatrix FitProx(List mat, List prox, List response, NumericVector lambda_s
     stop("response not the right type");
   }
 
-  XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
+  XPtr<class base_snp> x = as<XPtr<class base_snp> >(mat[1]);
   XPtr<class ProximalGradient> proxptr = as<XPtr<class ProximalGradient> >(prox[1]);
   XPtr<class Family> responseptr = as<XPtr<class Family> >(response[1]);
 
@@ -263,7 +323,7 @@ NumericMatrix FitProx(List mat, List prox, List response, NumericVector lambda_s
 
 // [[Rcpp::export]]
 double ComputeLambdaMax(List mat, List response, IntegerVector group) {
-  if (strcmp_r_c(mat[0], "sparse_snp")) {
+  if (strcmp_r_c(mat[0], "sparse_snp") && strcmp_r_c(mat[0], "dense_snp")) {
     stop("matrix not the right type");
   }
 
@@ -271,7 +331,7 @@ double ComputeLambdaMax(List mat, List response, IntegerVector group) {
     stop("response not the right type");
   }
 
-  XPtr<class sparse_snp> x = as<XPtr<class sparse_snp> >(mat[1]);
+  XPtr<class base_snp> x = as<XPtr<class base_snp> >(mat[1]);
   XPtr<class Family> responseptr = as<XPtr<class Family> >(response[1]);
   const uint32_t no = x->Getnrow();
   const uint32_t ni = x->Getncol();

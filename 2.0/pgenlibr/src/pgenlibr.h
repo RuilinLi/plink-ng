@@ -10,13 +10,25 @@ typedef struct CSB_ind{
    uint32_t col;
 } CSB_ind;
 
-
-class dense_snp{
-  private:
+class base_snp {
+  protected:
     uint32_t no;
     uint32_t ni;
+    uint32_t ncov;
+  public:
+    virtual void vtx(const double *v, double *result) const = 0;
+    virtual void xv(const double *v, double *result) const = 0;
+    uint32_t Getnrow() const;
+    uint32_t Getncol() const;
+    virtual ~base_snp();
+};
+
+class dense_snp : public base_snp{
+  private:
+
     uintptr_t *genovec;
     double *xim;
+    double *cov;
     bool loaded;
     uint32_t genovec_word_ct;
 
@@ -25,22 +37,20 @@ class dense_snp{
   public:
     dense_snp();
     ~dense_snp();
-    void vtx(const double *v, double *result) const;
-    void xv(const double *v, double *result) const;
-    uint32_t Getnrow() const;
-    uint32_t Getncol() const;
+    virtual void vtx(const double *v, double *result) const;
+    virtual void xv(const double *v, double *result) const;
+
     void ResetMeanImputation(const NumericVector meanimp);
 };
 
 
 // A compressed sparse block format for sparse genetic matrices
-class sparse_snp{
+class sparse_snp : public base_snp {
    private:
       uint64_t *blk_ptr; // the number of non-zero entries could be quite large
       uint32_t rowblock; // number of row blocks
       uint32_t colblock; // number of column blocks
-      uint32_t no; // number of rows
-      uint32_t ni; // number of columns
+
       uint32_t ndense; // number of dense columns
       CSB_ind * index; // row and column indices
       // stores the value of the non-zero entries
@@ -63,11 +73,10 @@ class sparse_snp{
       sparse_snp();
       ~sparse_snp();
       // Compute result = v^T X
-      void vtx(const double *v, double *result) const;
+      virtual void vtx(const double *v, double *result) const;
       // Compute result = X v
-      void xv(const double *v, double *result) const;
-      uint32_t Getnrow() const;
-      uint32_t Getncol() const;
+      virtual void xv(const double *v, double *result) const;
+
       void CopyMeanImputation(double *dest) const;
 };
 
@@ -119,7 +128,7 @@ public:
   void ReadDiffListOrGenovec(IntegerVector variant_subset);
   void ReadCompactListNoDosage(uintptr_t** Mptr , IntegerVector variant_subset, double *xm);
   void LoadSparse(sparse_snp &x, const int *variant_subset, const uint32_t vsubset_size);
-  void LoadDense(dense_snp &x, IntegerVector variant_subset);
+  void LoadDense(dense_snp &x, IntegerVector variant_subset, Nullable<NumericMatrix> covariates=R_NilValue);
 
   void Close();
 

@@ -6,15 +6,16 @@
 using namespace Rcpp;
 
 // NewDense
-SEXP NewDense(List pgen, IntegerVector variant_subset, Nullable<NumericVector> meanimp);
-RcppExport SEXP _pgenlibr_NewDense(SEXP pgenSEXP, SEXP variant_subsetSEXP, SEXP meanimpSEXP) {
+SEXP NewDense(List pgen, IntegerVector variant_subset, Nullable<NumericVector> meanimp, Nullable<NumericMatrix> covariates);
+RcppExport SEXP _pgenlibr_NewDense(SEXP pgenSEXP, SEXP variant_subsetSEXP, SEXP meanimpSEXP, SEXP covariatesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type pgen(pgenSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type variant_subset(variant_subsetSEXP);
     Rcpp::traits::input_parameter< Nullable<NumericVector> >::type meanimp(meanimpSEXP);
-    rcpp_result_gen = Rcpp::wrap(NewDense(pgen, variant_subset, meanimp));
+    Rcpp::traits::input_parameter< Nullable<NumericMatrix> >::type covariates(covariatesSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewDense(pgen, variant_subset, meanimp, covariates));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -39,20 +40,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type mat(matSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
     rcpp_result_gen = Rcpp::wrap(DenseMultv(mat, v));
-    return rcpp_result_gen;
-END_RCPP
-}
-// SparseTest123
-NumericMatrix SparseTest123(List mat, NumericVector y, IntegerVector group, NumericVector lambda_seq);
-RcppExport SEXP _pgenlibr_SparseTest123(SEXP matSEXP, SEXP ySEXP, SEXP groupSEXP, SEXP lambda_seqSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type mat(matSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type group(groupSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type lambda_seq(lambda_seqSEXP);
-    rcpp_result_gen = Rcpp::wrap(SparseTest123(mat, y, group, lambda_seq));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -93,6 +80,31 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type ni(niSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type group(groupSEXP);
     rcpp_result_gen = Rcpp::wrap(NewProxObj(ni, group));
+    return rcpp_result_gen;
+END_RCPP
+}
+// NewLassoObj
+SEXP NewLassoObj(int ni, Nullable<NumericVector> pfac, Nullable<NumericVector> beta);
+RcppExport SEXP _pgenlibr_NewLassoObj(SEXP niSEXP, SEXP pfacSEXP, SEXP betaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type ni(niSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type pfac(pfacSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type beta(betaSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewLassoObj(ni, pfac, beta));
+    return rcpp_result_gen;
+END_RCPP
+}
+// GradientDescentObj
+SEXP GradientDescentObj(int ni, Nullable<NumericVector> beta);
+RcppExport SEXP _pgenlibr_GradientDescentObj(SEXP niSEXP, SEXP betaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type ni(niSEXP);
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type beta(betaSEXP);
+    rcpp_result_gen = Rcpp::wrap(GradientDescentObj(ni, beta));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -474,13 +486,14 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_pgenlibr_NewDense", (DL_FUNC) &_pgenlibr_NewDense, 3},
+    {"_pgenlibr_NewDense", (DL_FUNC) &_pgenlibr_NewDense, 4},
     {"_pgenlibr_DenseTransMultv", (DL_FUNC) &_pgenlibr_DenseTransMultv, 2},
     {"_pgenlibr_DenseMultv", (DL_FUNC) &_pgenlibr_DenseMultv, 2},
-    {"_pgenlibr_SparseTest123", (DL_FUNC) &_pgenlibr_SparseTest123, 4},
     {"_pgenlibr_NewResponseObj", (DL_FUNC) &_pgenlibr_NewResponseObj, 3},
     {"_pgenlibr_NewCoxResponseObj", (DL_FUNC) &_pgenlibr_NewCoxResponseObj, 5},
     {"_pgenlibr_NewProxObj", (DL_FUNC) &_pgenlibr_NewProxObj, 2},
+    {"_pgenlibr_NewLassoObj", (DL_FUNC) &_pgenlibr_NewLassoObj, 3},
+    {"_pgenlibr_GradientDescentObj", (DL_FUNC) &_pgenlibr_GradientDescentObj, 2},
     {"_pgenlibr_FitProx", (DL_FUNC) &_pgenlibr_FitProx, 4},
     {"_pgenlibr_ComputeLambdaMax", (DL_FUNC) &_pgenlibr_ComputeLambdaMax, 3},
     {"_pgenlibr_match_sorted_snp", (DL_FUNC) &_pgenlibr_match_sorted_snp, 4},
