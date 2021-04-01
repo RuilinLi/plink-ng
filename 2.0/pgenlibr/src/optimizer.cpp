@@ -110,7 +110,7 @@ void LassoPenalty::prox(double lambda){
   for(uint32_t i = 0; i < ni; ++i){
     //beta_next[i] = beta[i] - step_size * grad[i];
     double grad_step = beta[i] - step_size * grad[i];
-    beta_next[i] = copysign(fmax(abs(grad_step) - step_size * lambda, 0), grad_step);
+    beta_next[i] = copysign(fmax(abs(grad_step) - step_size * lambda * pfac[i], 0), grad_step);
   }
 }
 
