@@ -141,8 +141,8 @@ ClosePvar <- function(pvar) {
     invisible(.Call(`_pgenlibr_ClosePvar`, pvar))
 }
 
-NewSparse <- function(pgen, variant_subset) {
-    .Call(`_pgenlibr_NewSparse`, pgen, variant_subset)
+NewSparse <- function(pgen, variant_subset, covariates = NULL) {
+    .Call(`_pgenlibr_NewSparse`, pgen, variant_subset, covariates)
 }
 
 SparseTransMultv <- function(mat, v) {

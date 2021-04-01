@@ -4,7 +4,7 @@
 static constexpr int ROW_BLOCK = 16;
 static constexpr int COL_BLOCK = 16;
 
-void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uint32_t vsubset_size)
+void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uint32_t vsubset_size, Nullable<NumericMatrix> covariates)
 {
     if (!_info_ptr)
     {
@@ -283,6 +283,19 @@ void RPgenReader::LoadSparse(sparse_snp &x, const int *variant_subset, const uin
 
     }
 
+    // Load covariates
+    if(covariates.isNotNull()){
+        NumericMatrix covM = as<NumericMatrix>(covariates);
+        if(covM.nrow() != _subset_size){
+            stop("Incorrect covariates dimensions");
+        }
+        // Copy the covariates to cov
+        x.ncov = covM.ncol();
+        x.cov = (double*)malloc(sizeof(double) * covM.ncol() * covM.nrow());
+        for(uint32_t i = 0; i < covM.ncol() * covM.nrow(); ++i){
+            x.cov[i] = covM[i];
+        }
+    }
 
 
     x.loaded = true;
@@ -309,6 +322,7 @@ sparse_snp::sparse_snp()
     ni = 0;
     no = 0;
     ncov = 0; // Will add covariates to it later
+    cov = nullptr;
 }
 
 sparse_snp::~sparse_snp() {
@@ -319,6 +333,9 @@ sparse_snp::~sparse_snp() {
         plink2::aligned_free(diffvec);
         free(dense_ind);
         plink2::aligned_free(genovec);
+        if(cov){
+            free(cov);
+        }
     }
 }
 
@@ -411,6 +428,15 @@ void sparse_snp::vtx(const double *v, double * result) const {
             result[colind] = (result_1 + 2 * result_2 + xim[colind] * result_missing);
         }
     }
+
+    #pragma omp parallel for
+    for(uint32_t j = 0; j < ncov; ++j){
+        double dot_prod = 0;
+        for(uint32_t i = 0; i < no; ++i){
+            dot_prod += cov[j*no + i] * v[i];
+        }
+        result[j + ni] = dot_prod;
+    }
 }
 
 void sparse_snp::xv(const double *v, double * result) const {
@@ -496,6 +522,18 @@ void sparse_snp::xv(const double *v, double * result) const {
                 }
             }
         }
+
+        start *= plink2::kBitsPerWordD2;
+        end *= plink2::kBitsPerWordD2;
+        if(end > no){
+            end = no;
+        }
+
+        for(uint32_t j = 0; j < ncov; ++j){
+            for(uint32_t i = start; i < end; ++i){
+                result[i] += cov[j*no+i] * v[j + ni]; 
+            }
+        }
     }
 
 
@@ -509,13 +547,13 @@ void sparse_snp::CopyMeanImputation(double *dest) const {
 }
 
 // [[Rcpp::export]]
-SEXP NewSparse(List pgen, IntegerVector variant_subset) {
+SEXP NewSparse(List pgen, IntegerVector variant_subset, Nullable<NumericMatrix> covariates=R_NilValue) {
    if (strcmp_r_c(pgen[0], "pgen")) {
     stop("pgen is not a pgen object");
   }
   XPtr<class RPgenReader> rp = as<XPtr<class RPgenReader> >(pgen[1]);
   XPtr<class sparse_snp> xp(new sparse_snp(), true);
-  rp->LoadSparse(*xp, &variant_subset[0], variant_subset.size());
+  rp->LoadSparse(*xp, &variant_subset[0], variant_subset.size(), covariates);
   return List::create(_["class"] = "sparse_snp", _["sparse_snp"] = xp);
 }
 

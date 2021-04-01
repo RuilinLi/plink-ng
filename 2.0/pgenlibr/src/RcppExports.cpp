@@ -438,14 +438,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // NewSparse
-SEXP NewSparse(List pgen, IntegerVector variant_subset);
-RcppExport SEXP _pgenlibr_NewSparse(SEXP pgenSEXP, SEXP variant_subsetSEXP) {
+SEXP NewSparse(List pgen, IntegerVector variant_subset, Nullable<NumericMatrix> covariates);
+RcppExport SEXP _pgenlibr_NewSparse(SEXP pgenSEXP, SEXP variant_subsetSEXP, SEXP covariatesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type pgen(pgenSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type variant_subset(variant_subsetSEXP);
-    rcpp_result_gen = Rcpp::wrap(NewSparse(pgen, variant_subset));
+    Rcpp::traits::input_parameter< Nullable<NumericMatrix> >::type covariates(covariatesSEXP);
+    rcpp_result_gen = Rcpp::wrap(NewSparse(pgen, variant_subset, covariates));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -521,7 +522,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pgenlibr_GetVariantId", (DL_FUNC) &_pgenlibr_GetVariantId, 2},
     {"_pgenlibr_GetAlleleCode", (DL_FUNC) &_pgenlibr_GetAlleleCode, 3},
     {"_pgenlibr_ClosePvar", (DL_FUNC) &_pgenlibr_ClosePvar, 1},
-    {"_pgenlibr_NewSparse", (DL_FUNC) &_pgenlibr_NewSparse, 2},
+    {"_pgenlibr_NewSparse", (DL_FUNC) &_pgenlibr_NewSparse, 3},
     {"_pgenlibr_SparseTransMultv", (DL_FUNC) &_pgenlibr_SparseTransMultv, 2},
     {"_pgenlibr_SparseMultv", (DL_FUNC) &_pgenlibr_SparseMultv, 2},
     {"_pgenlibr_GetSparseMeanImputation", (DL_FUNC) &_pgenlibr_GetSparseMeanImputation, 1},

@@ -67,6 +67,8 @@ class sparse_snp : public base_snp {
 
       bool loaded;
       double *xim; //imputed mean
+      double *cov;
+
       friend class RPgenReader;
    
    public:
@@ -127,7 +129,7 @@ public:
 
   void ReadDiffListOrGenovec(IntegerVector variant_subset);
   void ReadCompactListNoDosage(uintptr_t** Mptr , IntegerVector variant_subset, double *xm);
-  void LoadSparse(sparse_snp &x, const int *variant_subset, const uint32_t vsubset_size);
+  void LoadSparse(sparse_snp &x, const int *variant_subset, const uint32_t vsubset_size, Nullable<NumericMatrix> covariates=R_NilValue);
   void LoadDense(dense_snp &x, IntegerVector variant_subset, Nullable<NumericMatrix> covariates=R_NilValue);
 
   void Close();
