@@ -187,10 +187,10 @@ void solver(const base_snp &X, const Family &y, ProximalGradient &prox,
       // abs(current_val));
       double val_change = abs((next_val - current_val) / current_val);
       if ((val_change < 1e-5) || (next_val < 1e-6)) {
-        Rprintf("val_change is %f\n", val_change);
-        Rprintf("next_val is %f\n", next_val);
+        // Rprintf("val_change is %f\n", val_change);
+        // Rprintf("next_val is %f\n", next_val);
         Rprintf("Converged at iteration %d\n", t);
-        Rprintf("step size is %f, \n", prox.step_size);
+        // Rprintf("step size is %f, \n", prox.step_size);
         break;
       }
 
@@ -199,15 +199,15 @@ void solver(const base_snp &X, const Family &y, ProximalGradient &prox,
 
       if (t % 10 == 0) {
         R_CheckUserInterrupt();
-        Rprintf("value is %f, \n", next_val);
-        Rprintf("step size is %f, \n", prox.step_size);
+        // Rprintf("value is %f, \n", next_val);
+        // Rprintf("step size is %f, \n", prox.step_size);
       }
     }
     // save the result
     for (uint32_t i = 0; i < ni; ++i) {
       result_buffer[lamind * ni + i] = prox.beta_next[i];
     }
-    Rprintf("Results for Lambda index %d obtained\n", lamind+1);
+    //Rprintf("Results for Lambda index %d obtained\n", lamind+1);
     //prox.reset_nesterov_weight();
   }
 
